@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { View, FlatList, Text, StyleSheet, Button, Alert } from "react-native";
+import { View, FlatList, Text, StyleSheet, Alert } from "react-native";
 import 'react-native-get-random-values';
 import { stringify, v4 as uuidv4 } from 'uuid';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { List } from "react-native-paper";
+import { List, Button } from "react-native-paper";
 import { db } from "../firebase.config";
-import { ref, onValue, push, remove } from "firebase/database";
+import { ref, onValue, push, remove, set } from "firebase/database";
+import { auth } from "../firebase.config";
+
 
 export default function HomeScreen({ navigation }) {
 
@@ -28,6 +30,7 @@ export default function HomeScreen({ navigation }) {
 
     const getDate = () => {
         try {
+            console.log('getdate')
             const dateRef = ref(db, 'date/');
             onValue(dateRef, (snapshot) => {
                 const data = snapshot.val();
@@ -36,7 +39,9 @@ export default function HomeScreen({ navigation }) {
             })
         } catch (error) {
             console.log('error')
-            Alert.alert(error.message);
+            Alert.alert(error.message)
+            //var nowDate = new Date();
+            //push(ref(db, 'date/'), JSON.stringify(new Date());
         }
     };
 
@@ -45,6 +50,10 @@ export default function HomeScreen({ navigation }) {
         const nowDate = new Date();
         console.log('data ', dataDate);
         console.log('now ', nowDate);
+        /*
+        if (typeof dataDate === 'string' || dataDate instanceof String){
+            console.log('it string');
+        }*/
         if (
             nowDate.getFullYear() === dataDate.getFullYear() &&
             nowDate.getMonth() === dataDate.getMonth() &&
@@ -54,6 +63,9 @@ export default function HomeScreen({ navigation }) {
             updatePoems(false);
         } else {
             console.log('tis some other time');
+            /*set(ref(db, 'date/'), {
+                now: JSON.stringify(nowDate),
+            });*/
             updatePoems(true);
         }
     };
@@ -62,9 +74,12 @@ export default function HomeScreen({ navigation }) {
     const updatePoems = (dayChange) => {
         console.log(dayChange);
         if (dayChange === true) {
+            /*
             console.log('As you wish... have ur poems');
             const clearRef = ref(db, 'dailies/');
-            clearRef.remove();
+            remove(clearRef);
+            console.log('removed old ones');
+            */
             const endpoints = generateRequests();
             const fetchPromises = endpoints.map(endpoint => fetch(endpoint));
             Promise.all(fetchPromises)
@@ -86,25 +101,28 @@ export default function HomeScreen({ navigation }) {
             .catch(function (error) {
                 console.log(error);
             })
-        }
-        else {
-            const dailiesRef = ref(db, 'dailies/');
-            onValue(dailiesRef, (snapshot) => {
-                const data = snapshot.val();
-                setPoems(Object.values(data));
-            })
+        } else {
             console.log('all quiet on the western front');
     }};
 
     useEffect(() => {
         getDate();
+        try {
+            const dailiesRef = ref(db, 'dailies/');
+            onValue(dailiesRef, (snapshot) => {
+                const data = snapshot.val();
+                setPoems(Object.values(data));
+            });
+        } catch {
+            console.log('no poems');
+        }
     }, []);
 
     renderItem = ({item}) => (
         <List.Item
             title={item.title}
             description={item.author}
-            right={item => <Button title='Read' onPress={() => navigation.navigate('Poem', {poem: item})}></Button>}
+            right={item => <Button onPress={() => navigation.navigate('Poem', {poem: item})}>read</Button>}
         />
     );
 
@@ -117,10 +135,11 @@ export default function HomeScreen({ navigation }) {
                 <View>
                     <Text>{item.title}</Text>
                     <Text>{item.author}</Text>
-                    <Button title='Read' onPress={() => navigation.navigate('Poem', {poem: item})}></Button>
+                    <Button title='Read' onPress={() => navigation.navigate('Poem', {poem: item})}>READ</Button>
                 </View>}
             >
             </FlatList>
+            <Button onPress={() => auth.signOut()}>Log out</Button>
         </View>
     )
 };
