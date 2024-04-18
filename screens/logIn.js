@@ -19,6 +19,8 @@ export default function LogIn({navigation}) {
         } 
     };
 
+    console.log('log in')
+
     return (
         <View style={styles.container}>
             <TextInput

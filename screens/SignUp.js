@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { View, StyleSheet, KeyboardAvoidingView } from "react-native";
 import { Text, TextInput, Button } from "react-native-paper";
-import { auth } from "../firebase.config";
+import { auth, db } from "../firebase.config";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { child, ref } from "firebase/database";
 
 
 export default function SignUp({navigation}) {
@@ -14,8 +15,7 @@ export default function SignUp({navigation}) {
     const handleSignUp = async() => {
         setLoading(true);
         try {
-            const response = await createUserWithEmailAndPassword(auth, email, password);
-            console.log(response);
+            createUserWithEmailAndPassword(auth, email, password)
         } catch(error){
             console.log(error);
         }

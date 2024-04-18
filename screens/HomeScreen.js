@@ -63,9 +63,9 @@ export default function HomeScreen({ navigation }) {
             updatePoems(false);
         } else {
             console.log('tis some other time');
-            /*set(ref(db, 'date/'), {
+            set(ref(db, 'date/'), {
                 now: JSON.stringify(nowDate),
-            });*/
+            });
             updatePoems(true);
         }
     };
@@ -74,12 +74,10 @@ export default function HomeScreen({ navigation }) {
     const updatePoems = (dayChange) => {
         console.log(dayChange);
         if (dayChange === true) {
-            /*
             console.log('As you wish... have ur poems');
             const clearRef = ref(db, 'dailies/');
             remove(clearRef);
             console.log('removed old ones');
-            */
             const endpoints = generateRequests();
             const fetchPromises = endpoints.map(endpoint => fetch(endpoint));
             Promise.all(fetchPromises)
@@ -97,16 +95,19 @@ export default function HomeScreen({ navigation }) {
                     console.log('reached here')
                     push(ref(db, 'dailies/'), {author: object[0].author, title: object[0].title, linecount: object[0].linecount, lines: arr});
                 })
+                getPoemsFromDB();
             })
             .catch(function (error) {
                 console.log(error);
             })
         } else {
             console.log('all quiet on the western front');
-    }};
+            getPoemsFromDB();
+        }
+    };
 
-    useEffect(() => {
-        getDate();
+    const getPoemsFromDB = () => {
+        console.log('putting stuff on screen');
         try {
             const dailiesRef = ref(db, 'dailies/');
             onValue(dailiesRef, (snapshot) => {
@@ -116,6 +117,10 @@ export default function HomeScreen({ navigation }) {
         } catch {
             console.log('no poems');
         }
+    }
+
+    useEffect(() => {
+        getDate();
     }, []);
 
     renderItem = ({item}) => (
