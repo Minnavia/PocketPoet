@@ -2,8 +2,8 @@ import { useState } from "react";
 import { View, StyleSheet, KeyboardAvoidingView } from "react-native";
 import { Text, TextInput, Button } from "react-native-paper";
 import { auth, db } from "../firebase.config";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { child, ref } from "firebase/database";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { child, ref, set } from "firebase/database";
 
 
 export default function SignUp({navigation}) {
@@ -13,15 +13,25 @@ export default function SignUp({navigation}) {
     const [password, setPassword] = useState('');
 
     const handleSignUp = async() => {
-        setLoading(true);
         try {
-            createUserWithEmailAndPassword(auth, email, password)
+            await createUserWithEmailAndPassword(auth, email, password);
+            await updateProfile(auth.currentUser, {displayName: name})
+            .then(
+                userToDB()
+            );
         } catch(error){
             console.log(error);
         }
     }
 
-    console.log('Sign up')
+    const userToDB = () => {
+        console.log('at db');
+        user = auth.currentUser;
+        set(ref(db, `users/${user.uid}`), {
+            name: name,
+            email: email,
+        });
+    }
 
     return(
         <View style={styles.container}>

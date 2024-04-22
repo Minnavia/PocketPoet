@@ -7,11 +7,14 @@ import { List, Button } from "react-native-paper";
 import { db } from "../firebase.config";
 import { ref, onValue, push, remove, set } from "firebase/database";
 import { auth } from "../firebase.config";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 
 export default function HomeScreen({ navigation }) {
 
     const [poems, setPoems] = useState([]);
+
+    const user = auth.currentUser;
 
     //generate random numbers within limits to get poems of varying linecounts
     //get fetch requests
@@ -75,7 +78,7 @@ export default function HomeScreen({ navigation }) {
         console.log(dayChange);
         if (dayChange === true) {
             console.log('As you wish... have ur poems');
-            const clearRef = ref(db, 'dailies/');
+            const clearRef = ref(db, `users/${user.uid}/dailies/`);
             remove(clearRef);
             console.log('removed old ones');
             const endpoints = generateRequests();
@@ -92,8 +95,8 @@ export default function HomeScreen({ navigation }) {
                         array.push({id: uuidv4(), line: content});
                         return array;
                     }, []);
-                    console.log('reached here')
-                    push(ref(db, 'dailies/'), {author: object[0].author, title: object[0].title, linecount: object[0].linecount, lines: arr});
+                    console.log('reached here');
+                    push(ref(db, `users/${user.uid}/dailies/`), {author: object[0].author, title: object[0].title, linecount: object[0].linecount, lines: arr});
                 })
                 getPoemsFromDB();
             })
@@ -109,7 +112,7 @@ export default function HomeScreen({ navigation }) {
     const getPoemsFromDB = () => {
         console.log('putting stuff on screen');
         try {
-            const dailiesRef = ref(db, 'dailies/');
+            const dailiesRef = ref(db, `users/${user.uid}/dailies/`);
             onValue(dailiesRef, (snapshot) => {
                 const data = snapshot.val();
                 setPoems(Object.values(data));
@@ -132,7 +135,7 @@ export default function HomeScreen({ navigation }) {
     );
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <Text>PocketPoet</Text>
             <FlatList
                 data={poems}
@@ -144,8 +147,10 @@ export default function HomeScreen({ navigation }) {
                 </View>}
             >
             </FlatList>
+            <Button onPress={() => navigation.navigate('Favourites')}>Favourites</Button>
+            <Button onPress={() => updatePoems(true)}>Refresh</Button>
             <Button onPress={() => auth.signOut()}>Log out</Button>
-        </View>
+        </SafeAreaView>
     )
 };
 

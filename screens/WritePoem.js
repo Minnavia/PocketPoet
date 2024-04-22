@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Platform, KeyboardAvoidingView, SafeAreaView, Button, StyleSheet, Text, View } from "react-native";
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
+import { auth, db } from "../firebase.config";
+import { push, ref } from "firebase/database";
 
 export default function WritePoem({navigation}) {
 
@@ -14,6 +16,8 @@ export default function WritePoem({navigation}) {
     });
 
     const [lines, setLines] = useState('');
+
+    const user = auth.currentUser;
 
     const editor = useEditorBridge({
         autofocus: true,
@@ -45,7 +49,8 @@ export default function WritePoem({navigation}) {
             return array;
         }, []);
         console.log(arr);
-        setPoem({author: 'mie', title: 'jotain', lines: arr})
+        setPoem({author: user.displayName, title: 'jotain', lines: arr})
+        push(ref(db, `users/${user.uid}/poems/`), {author: user.displayName, title: 'jotain', lines: arr});
         console.log(poem);
     };
 
