@@ -6,6 +6,8 @@ import { List } from 'react-native-paper';
 import 'react-native-get-random-values';
 import { stringify, v4 as uuidv4 } from 'uuid';
 
+import { AntDesign } from '@expo/vector-icons';
+
 export default function SearchPoems({navigation}) {
 
     const [search, setSearch] = useState('');
@@ -16,11 +18,14 @@ export default function SearchPoems({navigation}) {
         fetch(`https://poetrydb.org/${option}/${search}`)
         .then(response => response.json())
         .then(function (data) {
+            console.log('trying to get data')
             newData = [];
             data.map(object => {
                 newData.push({id: uuidv4(), author: object.author, title: object.title, linecount: object.linecount, lines: object.lines});
             })
-            setResults(newData);
+            console.log('data map success', newData.length)
+            setTotalItemsSuppose(newData.length);
+            smth(newData);
         })
         .catch(err => {
             console.log(err);
@@ -35,6 +40,44 @@ export default function SearchPoems({navigation}) {
         }, []);
         return ({id: item.id, title: item.title, author: item.author, lines: arr});
     };
+
+
+
+    //pagination
+    const [totalItemsSuppose, setTotalItemsSuppose] = useState(0);
+    let eachListSize = 10;
+
+    function SplitIntoChunks(arr, chunkSize) {
+        if (chunkSize <= 0) throw 'Invalid Chunk size';
+        let result = [];
+        for (let i = 0, len = arr.length; i < len; i += chunkSize)
+          result.push(arr.slice(i, i + chunkSize));
+        return result;
+    }
+
+    const [page, SetPage] = useState(0);
+    const [MainDataArray, SetMainDataArray] = useState([]);
+    const from = page * eachListSize;
+    const to = (page + 1) * eachListSize;
+
+    const smth = (newData) => {
+        console.log('smth');
+        SetMainDataArray(SplitIntoChunks(newData, eachListSize));
+    }
+
+    const DecreaseRow = () => {
+        if (page > 0) SetPage(page - 1);
+        else SetPage(0);
+    };
+    
+    const IncreaseRow = () => {
+        if (page < totalItemsSuppose / eachListSize - 1) SetPage(page + 1);
+        else SetPage(totalItemsSuppose / eachListSize - 1);
+    };
+    
+    //pagination end
+
+
 
     renderItem = ({item}) => (
             <List.Item
@@ -75,12 +118,32 @@ export default function SearchPoems({navigation}) {
                 onPress={()=> {getResults()}}
             >Search</Button>
             <View style={styles.list}>
-            <FlatList
-                data={results}
-                keyExtractor={(item) => item.id}
-                renderItem={renderItem}
-                >
-            </FlatList>
+                <FlatList
+                    data={MainDataArray[page]}
+                    keyExtractor={(item) => item.id}
+                    renderItem={renderItem}
+                    >
+                </FlatList>
+            </View>
+            <View style={{ flexDirection: 'row' }}>
+                <AntDesign
+                    name="caretleft"
+                    size={24}
+                    color="black"
+                    onPress={DecreaseRow}
+                />
+                <Text>
+                    {`${from + 1}-${Math.min(
+                    to,
+                    totalItemsSuppose
+                    )} of ${totalItemsSuppose}`}
+                </Text>
+                <AntDesign
+                    name="caretright"
+                    size={24}
+                    color="black"
+                    onPress={IncreaseRow}
+                />
             </View>
         </View>
     )
