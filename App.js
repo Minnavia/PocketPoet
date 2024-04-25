@@ -1,4 +1,3 @@
-import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import TabNavigator from './components/tabNavigator';
 import { auth } from './firebase.config';
@@ -7,67 +6,40 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ActivityIndicator } from 'react-native-paper';
 import AuthNavigator from './components/stackAuth';
-
-const AuthenticatedUserContext = createContext({});
+import { AuthProvider, useAuth } from './contexts/authContext';
+import HomeScreen from './screens/HomeScreen';
 
 export default function App() {
 
-  const [user, setUser] = useState(null);
-  //const {user, setUser} = useContext(AuthenticatedUserContext);
-  const [isLoading, setIsLoading] = useState(true);
+    const [User, setUser] = useState(null);
+    //const User = auth.currentUser;
 
-  /*
-  const AuthenticatedUserProvider = ({children}) => {
-    const [user, setUser] = useState(null);
-    return (
-      <AuthenticatedUserContext.Provider value={{user, setUser}}>
-        {children}
-      </AuthenticatedUserContext.Provider>
-    )
-  }*/
+    //const User = auth.currentUser;
 
-  /*useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(
-      auth,
-      async (authenticatedUser) => {
-        authenticatedUser ? setUser(authenticatedUser) : setUser(null);
-        setIsLoading(false);
+    useEffect(() => {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          setUser(user);
+        } else {
+          setUser(null);
+        }
+      });
+    }, [])
+    /*onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        setUser(null);
       }
-    );
-    return unsubscribeAuth;
-  }, [user]);*/
+    });*/
 
-  useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      console.log('user', user);
-      setUser(user);
-    });
-  }, []);
+    console.log('app ', User);
 
-  const User = auth.currentUser;
-
-  /*if (isLoading) {
     return (
-      <AuthenticatedUserProvider>
-        <SafeAreaView style={styles.container}>
-          <ActivityIndicator size='large' />
-        </SafeAreaView>
-      </AuthenticatedUserProvider>
-    );
-  }*/
-
-  return (
-      <NavigationContainer>
-        {User ? <TabNavigator/> : <AuthNavigator/>}
-      </NavigationContainer>
-  );
+      <AuthProvider>
+        <NavigationContainer>
+            {User ? <TabNavigator/> : <AuthNavigator/>}
+        </NavigationContainer>
+      </AuthProvider>
+    )
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

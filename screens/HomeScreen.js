@@ -5,16 +5,16 @@ import { stringify, v4 as uuidv4 } from 'uuid';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { List, Button } from "react-native-paper";
 import { db } from "../firebase.config";
-import { ref, onValue, push, remove, set } from "firebase/database";
+import { ref, onValue, push, remove, set, get } from "firebase/database";
 import { auth } from "../firebase.config";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import UpdatePoems from "../components/updatePoems";
+import { useAuth } from "../contexts/authContext";
 
 export default function HomeScreen({ navigation }) {
 
     const [poems, setPoems] = useState([]);
-
-    const user = auth.currentUser;
+    const {user} = useAuth();
 
     //generate random numbers within limits to get poems of varying linecounts
     //get fetch requests
@@ -29,47 +29,71 @@ export default function HomeScreen({ navigation }) {
         return linecounts.map(linecount => `https://poetrydb.org/random,linecount/1;${linecount}`)
     };
 
+    const clearPoems = () => {
+        const clearRef = ref(db, `users/${user.uid}/dailies/`);
+        remove(clearRef);
+        console.log('removed old ones');
+        updatePoems(true);
+    };
+
     //check if the day has changed
 
-    const getDate = () => {
-        try {
-            console.log('getdate')
-            const dateRef = ref(db, 'date/');
-            onValue(dateRef, (snapshot) => {
-                const data = snapshot.val();
-                const date = JSON.parse(Object.values(data));
-                hasDayChanged(new Date(date));
-            })
-        } catch (error) {
-            console.log('error')
-            Alert.alert(error.message)
-            //var nowDate = new Date();
-            //push(ref(db, 'date/'), JSON.stringify(new Date());
-        }
+    const getDate = async () => {
+        console.log('getdate ', user.uid);
+        get(ref(db, `users/${user.uid}/dailies/`))
+        .then((snapshot) => {
+            if(snapshot.val() === null) {
+                console.log('doesnt exist');
+                updatePoems(true);
+            } else {
+                console.log('exists');
+                try {
+                    const dateRef = ref(db, `users/${user.uid}/date/`);
+                    onValue(dateRef, (snapshot) => {
+                        const data = snapshot.val();
+                        const dataDate = JSON.parse(data);
+                        if (dataDate === NaN) {
+                            console.log('NAN ALERT');
+                        } else {
+                            console.log('datadate ', new Date(dataDate));
+                            hasDayChanged(new Date(dataDate));
+                        }
+                    })
+                } catch (error) {
+                    console.log('error')
+                    Alert.alert(error.message)
+                    //var nowDate = new Date();
+                    //push(ref(db, 'date/'), JSON.stringify(new Date());
+                }
+            }
+        }).catch((error) => {
+            console.log(error);
+        });
     };
 
     const hasDayChanged = (dataDate) => {
         console.log('this aint kansas anymore', dataDate);
-        const nowDate = new Date();
-        console.log('data ', dataDate);
-        console.log('now ', nowDate);
-        /*
-        if (typeof dataDate === 'string' || dataDate instanceof String){
-            console.log('it string');
-        }*/
-        if (
-            nowDate.getFullYear() === dataDate.getFullYear() &&
-            nowDate.getMonth() === dataDate.getMonth() &&
-            nowDate.getDate() === dataDate.getDate()
-        ) {
-            console.log('it today');
-            updatePoems(false);
+        if (dataDate === NaN) {
+            console.log('NAN ALERT');
         } else {
-            console.log('tis some other time');
-            set(ref(db, 'date/'), {
-                now: JSON.stringify(nowDate),
-            });
-            updatePoems(true);
+            const nowDate = new Date();
+            console.log('data ', dataDate);
+            console.log('now ', nowDate);
+            if (typeof dataDate === 'string' || dataDate instanceof String){
+                console.log('it string');
+            }
+            if (
+                nowDate.getFullYear() === dataDate.getFullYear() &&
+                nowDate.getMonth() === dataDate.getMonth() &&
+                nowDate.getDate() === dataDate.getDate()
+            ) {
+                console.log('it today');
+                updatePoems(false);
+            } else {
+                console.log('tis some other time');
+                set(ref(db, `users/${user.uid}/date`), JSON.stringify(nowDate));
+                clearPoems();
+            }
         }
     };
 
@@ -78,9 +102,6 @@ export default function HomeScreen({ navigation }) {
         console.log(dayChange);
         if (dayChange === true) {
             console.log('As you wish... have ur poems');
-            const clearRef = ref(db, `users/${user.uid}/dailies/`);
-            remove(clearRef);
-            console.log('removed old ones');
             const endpoints = generateRequests();
             const fetchPromises = endpoints.map(endpoint => fetch(endpoint));
             Promise.all(fetchPromises)
@@ -123,6 +144,8 @@ export default function HomeScreen({ navigation }) {
     }
 
     useEffect(() => {
+        console.log('homescreen', user.uid)
+        //set(ref(db, `users/${user.uid}/test`), 'testi');
         getDate();
     }, []);
 
@@ -136,7 +159,7 @@ export default function HomeScreen({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <Text>PocketPoet</Text>
+            <Text>PocketPoet {user.uid}</Text>
             <FlatList
                 data={poems}
                 renderItem={({item}) =>

@@ -71,8 +71,11 @@ export default function SearchPoems({navigation}) {
     };
     
     const IncreaseRow = () => {
-        if (page < totalItemsSuppose / eachListSize - 1) SetPage(page + 1);
-        else SetPage(totalItemsSuppose / eachListSize - 1);
+        if (page <= totalItemsSuppose / eachListSize - 1) { 
+            SetPage(page + 1);
+        } else {
+            SetPage(totalItemsSuppose / eachListSize - 1);
+        }
     };
     
     //pagination end
