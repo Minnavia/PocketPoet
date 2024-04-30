@@ -38,7 +38,7 @@ export default function HomeScreen({ navigation }) {
 
     //check if the day has changed
 
-    const getDate = async () => {
+    const getDate = () => {
         console.log('getdate ', user.uid);
         get(ref(db, `users/${user.uid}/dailies/`))
         .then((snapshot) => {

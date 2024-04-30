@@ -1,31 +1,37 @@
 import { useState } from "react";
-import { Alert, Pressable, StyleSheet, View, Text, FlatList } from "react-native";
+import { StyleSheet, View, Text, FlatList } from "react-native";
 import { Button, RadioButton } from 'react-native-paper';
 import { Searchbar } from 'react-native-paper';
-import { List } from 'react-native-paper';
 import 'react-native-get-random-values';
-import { stringify, v4 as uuidv4 } from 'uuid';
-
+import { v4 as uuidv4 } from 'uuid';
+import { Pagination } from "@ant-design/react-native";
 import { AntDesign } from '@expo/vector-icons';
+import { List } from "react-native-paper";
 
 export default function SearchPoems({navigation}) {
 
     const [search, setSearch] = useState('');
-    const [results, setResults] = useState([]);
     const [option, setOption] = useState('none selected');
+    const [totalItems, setTotalItems] = useState(0);
+    const [pageData, SetPageData] = useState([]);
+    const [page, setPage] = useState(0);
+
+    const listSize = 10;
+    const from = page * listSize;
+    const to = (page + 1) * listSize;
 
     const getResults = () => {
         fetch(`https://poetrydb.org/${option}/${search}`)
         .then(response => response.json())
         .then(function (data) {
-            console.log('trying to get data')
+            console.log('trying to get data');
             newData = [];
             data.map(object => {
                 newData.push({id: uuidv4(), author: object.author, title: object.title, linecount: object.linecount, lines: object.lines});
-            })
-            console.log('data map success', newData.length)
-            setTotalItemsSuppose(newData.length);
-            smth(newData);
+            });
+            console.log('data map success', newData.length);
+            setTotalItems(newData.length);
+            handleData(newData);
         })
         .catch(err => {
             console.log(err);
@@ -41,46 +47,37 @@ export default function SearchPoems({navigation}) {
         return ({id: item.id, title: item.title, author: item.author, lines: arr});
     };
 
-
-
-    //pagination
-    const [totalItemsSuppose, setTotalItemsSuppose] = useState(0);
-    let eachListSize = 10;
+    const handleData = (newData) => {
+        console.log('setting page data');
+        SetPageData(SplitIntoChunks(newData, listSize));
+    };
 
     function SplitIntoChunks(arr, chunkSize) {
         if (chunkSize <= 0) throw 'Invalid Chunk size';
         let result = [];
         for (let i = 0, len = arr.length; i < len; i += chunkSize)
           result.push(arr.slice(i, i + chunkSize));
+        console.log(result[0].length);
         return result;
-    }
-
-    const [page, SetPage] = useState(0);
-    const [MainDataArray, SetMainDataArray] = useState([]);
-    const from = page * eachListSize;
-    const to = (page + 1) * eachListSize;
-
-    const smth = (newData) => {
-        console.log('smth');
-        SetMainDataArray(SplitIntoChunks(newData, eachListSize));
-    }
-
-    const DecreaseRow = () => {
-        if (page > 0) SetPage(page - 1);
-        else SetPage(0);
     };
-    
-    const IncreaseRow = () => {
-        if (page <= totalItemsSuppose / eachListSize - 1) { 
-            SetPage(page + 1);
+
+    const nextPage = () => {
+        if (page < Math.floor(totalItems / listSize)) {
+            console.log(page, ' smaller than ', Math.floor(totalItems / listSize))
+            setPage(page + 1);
         } else {
-            SetPage(totalItemsSuppose / eachListSize - 1);
+            console.log('else');
+            setPage(page);
         }
     };
-    
-    //pagination end
 
-
+    const prevPage = () => {
+        if (page > 0) {
+            setPage(page - 1);
+        } else {
+            setPage(0);
+        }
+    };
 
     renderItem = ({item}) => (
             <List.Item
@@ -122,31 +119,22 @@ export default function SearchPoems({navigation}) {
             >Search</Button>
             <View style={styles.list}>
                 <FlatList
-                    data={MainDataArray[page]}
+                    data={pageData[page]}
                     keyExtractor={(item) => item.id}
                     renderItem={renderItem}
                     >
                 </FlatList>
             </View>
-            <View style={{ flexDirection: 'row' }}>
-                <AntDesign
-                    name="caretleft"
-                    size={24}
-                    color="black"
-                    onPress={DecreaseRow}
-                />
-                <Text>
-                    {`${from + 1}-${Math.min(
-                    to,
-                    totalItemsSuppose
-                    )} of ${totalItemsSuppose}`}
-                </Text>
-                <AntDesign
-                    name="caretright"
-                    size={24}
-                    color="black"
-                    onPress={IncreaseRow}
-                />
+            <View style={styles.pagination}>
+                <Button
+                    onPress={()=> {prevPage()}}>
+                    Previous
+                </Button>
+                <Text>{`${from + 1}-${Math.min(to, totalItems)} of ${totalItems}`}</Text>
+                <Button
+                    onPress={()=>{nextPage()}}>
+                    Next
+                </Button>
             </View>
         </View>
     )
@@ -166,9 +154,15 @@ const styles = StyleSheet.create({
         columnGap: 20,
     },
     list: {
+        backgroundColor: 'pink',
         flex: 1,
         alignItems: 'center',
         justifyContent:'center',
         width: '100%'
+    },
+    pagination: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
     }
 });  
