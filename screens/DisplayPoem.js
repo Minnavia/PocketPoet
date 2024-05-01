@@ -3,12 +3,13 @@ import { useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { auth, db } from "../firebase.config";
 import { Button } from "react-native-paper";
+import { useAuth } from "../contexts/authContext";
 
 export default function DisplayPoem({ route, navigation }) {
 
     const {poem} = route.params;
 
-    const user = auth.currentUser;
+    const {user} = useAuth();
 
     const renderItem = ({ item }) => (
         <View style={styles.listItem}>

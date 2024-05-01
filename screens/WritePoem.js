@@ -4,10 +4,13 @@ import { useState } from "react";
 import { Platform, KeyboardAvoidingView, SafeAreaView, Button, StyleSheet, Text, View } from "react-native";
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
-import { auth, db } from "../firebase.config";
+import { db } from "../firebase.config";
 import { push, ref } from "firebase/database";
+import { useAuth } from "../contexts/authContext";
 
 export default function WritePoem({navigation}) {
+
+    const {user} = useAuth();
 
     const [poem, setPoem] = useState({
         title: '',
@@ -16,8 +19,6 @@ export default function WritePoem({navigation}) {
     });
 
     const [lines, setLines] = useState('');
-
-    const user = auth.currentUser;
 
     const editor = useEditorBridge({
         autofocus: true,
@@ -62,11 +63,11 @@ export default function WritePoem({navigation}) {
         <SafeAreaView style={styles.editor}>
             <RichText editor={editor} />
             <KeyboardAvoidingView 
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.KeyboardAvoidingView}>
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.KeyboardAvoidingView}>
                 <Toolbar editor={editor}/>
             </KeyboardAvoidingView>
-            <Button title='save' onPress={()=>{savePoem()}}></Button>
+            <Button title='save' onPress={()=> {savePoem()}}></Button>
             <Button title='Read' onPress={() => {submitPoem()}}></Button>
         </SafeAreaView>
     )

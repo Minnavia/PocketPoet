@@ -29,12 +29,14 @@ export default function SignUp({navigation}) {
         console.log('at db');
         const User = auth.currentUser
         set(ref(db, `users/${User.uid}`), {
-            name: name,
-            email: email,
-            min: 5,
-            max: 15,
-            poemCount: 3,
-            date: JSON.stringify(new Date())
+            date: JSON.stringify(new Date()),
+            details: {
+                name: name,
+                email: email,
+                min: 5,
+                max: 15,
+                poemCount: 3,
+            }
         });
         console.log('we did it folks');
     };

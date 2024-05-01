@@ -4,8 +4,6 @@ import { Button, RadioButton } from 'react-native-paper';
 import { Searchbar } from 'react-native-paper';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
-import { Pagination } from "@ant-design/react-native";
-import { AntDesign } from '@expo/vector-icons';
 import { List } from "react-native-paper";
 
 export default function SearchPoems({navigation}) {

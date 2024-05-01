@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from '../screens/HomeScreen';
 import DisplayPoem from '../screens/DisplayPoem';
 import Favourites from '../screens/Favourites';
+import Profile from '../screens/Profile';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,6 +23,11 @@ const StackNavigator = () => {
         <Stack.Screen
             name='Favourites'
             component={Favourites}
+            options={{headerShown: false}}
+        />
+        <Stack.Screen 
+            name='Profile'
+            component={Profile}
             options={{headerShown: false}}
         />
       </Stack.Navigator>

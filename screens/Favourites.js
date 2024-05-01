@@ -1,13 +1,14 @@
 import { SafeAreaView } from "react-native-safe-area-context";
-import { auth, db } from "../firebase.config";
+import { db } from "../firebase.config";
 import { FlatList } from "react-native";
 import { useEffect, useState } from "react";
 import { Button, List } from "react-native-paper";
 import { onValue, ref } from "firebase/database";
+import { useAuth } from "../contexts/authContext";
 
 export default function Favourites({navigation}){
 
-    const user = auth.currentUser;
+    const {user} = useAuth();
 
     const [favourites, setFavourites] = useState([]);
 
@@ -27,10 +28,12 @@ export default function Favourites({navigation}){
         <List.Item
             title={item.title}
             description={item.author}
-            right={item => <Button onPress={() => navigation.navigate('Poem', {poem: item})}>read</Button>}
+            onPress={() => {
+                console.log(item);
+                navigation.navigate('Poem', {poem: item})}}
         />
     );
-
+//navigation.navigate('Poem', {poem: item})
     return(
         <SafeAreaView>
             <FlatList 

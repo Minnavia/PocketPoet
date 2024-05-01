@@ -15,16 +15,23 @@ export default function HomeScreen({ navigation }) {
 
     const [poems, setPoems] = useState([]);
     const {user} = useAuth();
+    const [details, setDetails] = useState({});
 
     //generate random numbers within limits to get poems of varying linecounts
     //get fetch requests
     const generateRequests = () => {
-        const min = 5;
-        const max = 15;
-        const poemCount = 3;
+        try {
+            const detailsRef = ref(db, `users/${user.uid}/details`);
+            onValue(detailsRef, (snapshot) => {
+                const data = snapshot.val();
+                setDetails(data);
+            });
+        } catch(error) {
+            console.log(error);
+        }
         const linecounts = [];
-        for (let i = 0; i < poemCount; i++) {
-            linecounts.push(Math.floor(Math.random() * (max - min + 1)) + min);
+        for (let i = 0; i < details.poemCount; i++) {
+            linecounts.push(Math.floor(Math.random() * (details.max - details.min + 1)) + details.min);
         }
         return linecounts.map(linecount => `https://poetrydb.org/random,linecount/1;${linecount}`)
     };
@@ -171,7 +178,8 @@ export default function HomeScreen({ navigation }) {
             >
             </FlatList>
             <Button onPress={() => navigation.navigate('Favourites')}>Favourites</Button>
-            <Button onPress={() => updatePoems(true)}>Refresh</Button>
+            <Button onPress={() => navigation.navigate('Profile')}>Profile</Button>
+            <Button onPress={() => clearPoems(true)}>Refresh</Button>
             <Button onPress={() => auth.signOut()}>Log out</Button>
         </SafeAreaView>
     )
