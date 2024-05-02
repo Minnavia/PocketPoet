@@ -7,9 +7,8 @@ import { Button, Dialog, Divider, List, Portal, TextInput, Text, PaperProvider }
 
 export default function Profile () {
 
-    const {user} = useAuth();
+    const {user, details} = useAuth();
 
-    const [details, setDetails] = useState({});
     const [visible, setVisible] = useState(false);
     const [editable, setEditable] = useState({
         name: '',
@@ -17,19 +16,6 @@ export default function Profile () {
         explanation: ''
     });
     const [edit, setEdit] = useState('');
-
-    useEffect(() => {
-        try {
-            const detailsRef = ref(db, `users/${user.uid}/details`);
-            onValue(detailsRef, (snapshot) => {
-                const data = snapshot.val();
-                setDetails(data);
-            });
-            console.log('details', details);
-        } catch(error) {
-            console.log(error);
-        }
-    }, []);
 
     const showDialog = (n, val, exp) => {
         setEditable({... editable, name: n, value: val, explanation: exp});

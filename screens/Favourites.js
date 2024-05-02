@@ -33,13 +33,13 @@ export default function Favourites({navigation}){
                 navigation.navigate('Poem', {poem: item})}}
         />
     );
-//navigation.navigate('Poem', {poem: item})
+
     return(
         <SafeAreaView>
             <FlatList 
                 data={favourites}
                 renderItem={renderItem}
-                keyExtractor={(item) => item.key}
+                keyExtractor={(item) => item.id}
             />
         </SafeAreaView>
     )

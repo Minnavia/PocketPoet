@@ -5,8 +5,6 @@ import SignUp from "../screens/SignUp";
 const Stack = createNativeStackNavigator();
 
 function AuthNavigator () {
-
-    console.log('made it here');
     
     return (
         <Stack.Navigator initialRouteName="SignUp">

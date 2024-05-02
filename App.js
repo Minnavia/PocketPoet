@@ -33,7 +33,7 @@ export default function App() {
       }
     });*/
 
-    console.log('app ', User);
+    //console.log('app ', User);
 
     return (
       <AuthProvider>
