@@ -36,6 +36,7 @@ export default function SignUp({navigation}) {
                 min: 5,
                 max: 15,
                 poemCount: 3,
+                random: false,
             }
         });
         console.log('we did it folks');

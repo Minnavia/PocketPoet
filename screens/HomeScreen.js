@@ -55,30 +55,46 @@ export default function HomeScreen({ navigation }) {
         console.log(dayChange);
         if (dayChange === true) {
             console.log('As you wish... have ur poems');
-            const endpoints = await generateRequests();
-            const fetchPromises = endpoints.map(endpoint => fetch(endpoint));
-            Promise.all(fetchPromises)
-            .then(function (responses) {
-                console.log('promise');
-                return Promise.all(responses.map(function (response) {
-                    return response.json();
-                }));
-            })
-            .then(function (data) {
-                data = data.map(object => {
-                    var arr = object[0].lines.reduce(function(array, content) {
-                        array.push({id: uuidv4(), line: content});
-                        return array;
-                    }, []);
-                    return({id: uuidv4(),author: object[0].author, title: object[0].title, linecount: object[0].linecount, lines: arr})
+            if (details.random === false) {
+                const endpoints = await generateRequests();
+                const fetchPromises = endpoints.map(endpoint => fetch(endpoint));
+                Promise.all(fetchPromises)
+                .then(function (responses) {
+                    console.log('promise');
+                    return Promise.all(responses.map(function (response) {
+                        return response.json();
+                    }));
                 })
-                set(ref(db, `users/${user.uid}/dailies/`), data);
-                console.log('end', data);
-                getPoemsFromDB();
-            })
-            .catch(function (error) {
-                console.log(error);
-            })
+                .then(function (data) {
+                    data = data.map(object => {
+                        var arr = object[0].lines.reduce(function(array, content) {
+                            array.push({id: uuidv4(), line: content});
+                            return array;
+                        }, []);
+                        return({id: uuidv4(),author: object[0].author, title: object[0].title, linecount: object[0].linecount, lines: arr})
+                    })
+                    set(ref(db, `users/${user.uid}/dailies/`), data);
+                    getPoemsFromDB();
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
+            } else {
+                fetch(`https://poetrydb.org/random/${details.poemCount}`)
+                .then(response => response.json())
+                .then(function (data) {
+                    console.log(data[0]);
+                    data = data.map(object => {
+                        var arr = object.lines.reduce(function(array, content) {
+                            array.push({id: uuidv4(), line: content});
+                            return array;
+                        }, []);
+                        return({id: uuidv4(),author: object.author, title: object.title, linecount: object.linecount, lines: arr})
+                    })
+                    set(ref(db, `users/${user.uid}/dailies/`), data);
+                    getPoemsFromDB();
+                })
+            }
         } else {
             get(ref(db, `users/${user.uid}/dailies/`))
             .then((snapshot) => {
@@ -107,6 +123,7 @@ export default function HomeScreen({ navigation }) {
     }
 
     useEffect(() => {
+        console.log('user ', user.uid)
         //set(ref(db, `users/${user.uid}/test`), 'testi');
         console.log('DETAILS ', details);
         console.log('DATE ', date)
@@ -139,7 +156,6 @@ export default function HomeScreen({ navigation }) {
             <Button onPress={() => navigation.navigate('Favourites')}>Favourites</Button>
             <Button onPress={() => navigation.navigate('Profile')}>Profile</Button>
             <Button onPress={() => updatePoems(true)}>Refresh</Button>
-            <Button onPress={() => forceUpdate}>rerender</Button>
             <Button onPress={() => auth.signOut()}>Log out</Button>
         </SafeAreaView>
     )
@@ -152,4 +168,4 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       justifyContent: 'center',
     },
-  });  
+  });
