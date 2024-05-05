@@ -149,14 +149,12 @@ export default function HomeScreen({ navigation }) {
                 <View>
                     <Text>{item.title}</Text>
                     <Text>{item.author}</Text>
-                    <Button title='Read' onPress={() => navigation.navigate('Poem', {poem: item})}>READ</Button>
+                    <Button title='Read' onPress={() => navigation.navigate('Read', {poem: item})}>READ</Button>
                 </View>}
             >
             </FlatList>
             <Button onPress={() => navigation.navigate('Favourites')}>Favourites</Button>
-            <Button onPress={() => navigation.navigate('Profile')}>Profile</Button>
             <Button onPress={() => updatePoems(true)}>Refresh</Button>
-            <Button onPress={() => auth.signOut()}>Log out</Button>
         </SafeAreaView>
     )
 };

@@ -3,11 +3,12 @@ import TabNavigator from './components/tabNavigator';
 import { auth } from './firebase.config';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ActivityIndicator } from 'react-native-paper';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, PaperProvider } from 'react-native-paper';
 import AuthNavigator from './components/stackAuth';
 import { AuthProvider, useAuth } from './contexts/authContext';
 import HomeScreen from './screens/HomeScreen';
+import ProfileNavigator from './components/profileStack';
 
 export default function App() {
 
@@ -37,9 +38,13 @@ export default function App() {
 
     return (
       <AuthProvider>
-        <NavigationContainer>
-            {User ? <TabNavigator/> : <AuthNavigator/>}
-        </NavigationContainer>
+        <SafeAreaProvider>
+          <PaperProvider>
+            <NavigationContainer>
+                {User ? <ProfileNavigator/> : <AuthNavigator/>}
+            </NavigationContainer>
+          </PaperProvider>
+        </SafeAreaProvider>
       </AuthProvider>
     )
 };

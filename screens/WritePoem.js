@@ -1,12 +1,13 @@
 import { BlockquoteBridge, BoldBridge, ItalicBridge, RichText, StrikeBridge, Toolbar, useEditorBridge, useEditorContent } from "@10play/tentap-editor";
 import React, { useEffect } from "react";
 import { useState } from "react";
-import { Platform, KeyboardAvoidingView, SafeAreaView, Button, StyleSheet, Text, View } from "react-native";
+import { Platform, KeyboardAvoidingView, Button, StyleSheet, Text, View } from "react-native";
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from "../firebase.config";
 import { push, ref } from "firebase/database";
 import { useAuth } from "../contexts/authContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function WritePoem({navigation}) {
 

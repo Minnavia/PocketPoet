@@ -7,28 +7,19 @@ import Profile from '../screens/Profile';
 const Stack = createNativeStackNavigator();
 
 const StackNavigator = () => {
-   
+
     return (
-      <Stack.Navigator initialRouteName="Home">
+      <Stack.Navigator 
+        initialRouteName="Home"
+        screenOptions={{headerShown: false}}
+        >
          <Stack.Screen 
             name="Home" 
             component={HomeScreen}
-            options={{headerShown: false}}
-        />
-         <Stack.Screen 
-            name='Poem'
-            component={DisplayPoem} 
-            options={{headerShown: false}}
         />
         <Stack.Screen
             name='Favourites'
             component={Favourites}
-            options={{headerShown: false}}
-        />
-        <Stack.Screen 
-            name='Profile'
-            component={Profile}
-            options={{headerShown: false}}
         />
       </Stack.Navigator>
     )

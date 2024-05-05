@@ -4,6 +4,7 @@ import { FlatList, StyleSheet, Text, View } from "react-native";
 import { auth, db } from "../firebase.config";
 import { Button } from "react-native-paper";
 import { useAuth } from "../contexts/authContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function DisplayPoem({ route, navigation }) {
 
@@ -26,7 +27,7 @@ export default function DisplayPoem({ route, navigation }) {
     }
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <Text>Looking at a poem</Text>
                 <Text>{poem.title}</Text>
                 <Text>{poem.author}</Text>
@@ -36,7 +37,7 @@ export default function DisplayPoem({ route, navigation }) {
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id}
                 ></FlatList>
-        </View>
+        </SafeAreaView>
     )
 }
 

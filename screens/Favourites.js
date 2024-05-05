@@ -1,6 +1,6 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import { db } from "../firebase.config";
-import { FlatList } from "react-native";
+import { FlatList, StyleSheet } from "react-native";
 import { useEffect, useState } from "react";
 import { Button, List } from "react-native-paper";
 import { onValue, ref } from "firebase/database";
@@ -35,7 +35,7 @@ export default function Favourites({navigation}){
     );
 
     return(
-        <SafeAreaView>
+        <SafeAreaView style={styles.container}>
             <FlatList 
                 data={favourites}
                 renderItem={renderItem}
@@ -43,4 +43,13 @@ export default function Favourites({navigation}){
             />
         </SafeAreaView>
     )
-}
+};
+
+const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#fff',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+});

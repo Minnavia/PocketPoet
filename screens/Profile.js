@@ -75,7 +75,6 @@ export default function Profile () {
     };
 
     return(
-        <PaperProvider>
         <SafeAreaView style={styles.container}>
             <Text>Hello {details.name}!</Text>
             <Text>{editable.value}</Text>
@@ -167,7 +166,6 @@ export default function Profile () {
                 </Dialog>
             </Portal>
         </SafeAreaView>
-        </PaperProvider>
     )
 }
 

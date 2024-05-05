@@ -44,11 +44,11 @@ export function AuthProvider({children}) {
     }
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            console.log('Auth', user.uid);
-            setUser({...user});
-            getDetails(user);
-            getDate(user);
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            console.log('Auth', currentUser.uid);
+            setUser({...currentUser});
+            getDetails(currentUser);
+            getDate(currentUser);
         });
         return unsubscribe;
     }, []);

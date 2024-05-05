@@ -5,6 +5,7 @@ import { Searchbar } from 'react-native-paper';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { List } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SearchPoems({navigation}) {
 
@@ -88,7 +89,7 @@ export default function SearchPoems({navigation}) {
     )
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <Text>User option: {option}</Text>
                 <RadioButton.Group onValueChange={newValue => setOption(newValue)} value={option}>
                     <View style={styles.radiobuttons}>
@@ -134,7 +135,7 @@ export default function SearchPoems({navigation}) {
                     Next
                 </Button>
             </View>
-        </View>
+        </SafeAreaView>
     )
 };
 

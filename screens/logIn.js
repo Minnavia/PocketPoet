@@ -4,6 +4,7 @@ import { signInWithEmailAndPassword } from "firebase/auth"
 import { auth } from "../firebase.config"
 import { useState } from "react"
 import { Button } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context"
 
 export default function LogIn({navigation}) {
 
@@ -20,7 +21,7 @@ export default function LogIn({navigation}) {
     };
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <TextInput
                 placeholder="Enter email"
                 autoCapitalize="none"
@@ -45,7 +46,7 @@ export default function LogIn({navigation}) {
             <Button
                 onPress={() => navigation.navigate('SignUp')}
             >Don't have an account?</Button>
-        </View>
+        </SafeAreaView>
     )
 }
 
