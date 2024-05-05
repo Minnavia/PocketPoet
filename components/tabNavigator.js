@@ -1,56 +1,22 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import WritePoem from '../screens/WritePoem';
-import StackNavigator from './stackHome';
-import { Appbar, BottomNavigation, Menu, Text } from 'react-native-paper';
+import { BottomNavigation } from 'react-native-paper';
 import { MaterialIcons } from '@expo/vector-icons';
 import { CommonActions } from '@react-navigation/native';
 import { FontAwesome6 } from '@expo/vector-icons';
-import { StyleSheet, View } from 'react-native';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { StyleSheet } from 'react-native';
 import SearchPoems from '../screens/SearchPoems';
-import { useState } from 'react';
-import App from '../App';
-import { auth } from '../firebase.config';
+import Favourites from '../screens/Favourites';
+import HomeScreen from '../screens/HomeScreen';
 
 const Tab = createBottomTabNavigator();
-
-function HeaderLogo({navigation, route, options, back}) {
-  
-  const [visible, setVisible] = useState(false);
-  const openMenu = () => setVisible(true);
-  const closeMenu = () => setVisible(false);
-
-  return (
-      <Appbar.Header>
-        {back ? <Appbar.BackAction onPress={navigation.goBack} /> : null}
-        <Appbar.Content title='PocketPoet'/>
-        <Menu
-          visible={visible}
-          onDismiss={closeMenu}
-          anchor={
-            <Appbar.Action
-              icon="dots-vertical"
-              onPress={openMenu}
-            />
-          }
-        >
-          <Menu.Item
-            title="Settings"
-            onPress={() => navigation.navigate('Profile')}
-          />
-          <Menu.Item
-            title="Log out"
-            onPress={() => auth.signOut()}
-          />
-        </Menu>
-      </Appbar.Header>
-  )
-};
 
 function TabNavigator() {
   return (
     <Tab.Navigator 
         screenOptions={{
-          header: (props) => <HeaderLogo {...props}/>
+          headerShown: false
         }}
         initialRouteName='PocketPoet'
         tabBar={({navigation, state, descriptors, insets}) => (
@@ -104,11 +70,21 @@ function TabNavigator() {
       />
       <Tab.Screen 
           name="PocketPoet"
-          component={StackNavigator}
+          component={HomeScreen}
           options={{
             tabBarLabel: 'Home',
             tabBarIcon: ({color, size}) => {
               return <MaterialIcons name='home' size={size} color={color}/>
+            }
+          }}
+      />
+      <Tab.Screen
+          name="Favourites"
+          component={Favourites}
+          options={{
+            tabBarLabel: 'Favourites',
+            tabBarIcon: ({color, size}) => {
+              return <FontAwesome name='heart' size={size} color={color}/>
             }
           }}
       />

@@ -71,7 +71,7 @@ export default function HomeScreen({ navigation }) {
                             array.push({id: uuidv4(), line: content});
                             return array;
                         }, []);
-                        return({id: uuidv4(),author: object[0].author, title: object[0].title, linecount: object[0].linecount, lines: arr})
+                        return({id: uuidv4(), author: object[0].author, title: object[0].title, linecount: object[0].linecount, lines: arr})
                     })
                     set(ref(db, `users/${user.uid}/dailies/`), data);
                     getPoemsFromDB();
@@ -83,7 +83,6 @@ export default function HomeScreen({ navigation }) {
                 fetch(`https://poetrydb.org/random/${details.poemCount}`)
                 .then(response => response.json())
                 .then(function (data) {
-                    console.log(data[0]);
                     data = data.map(object => {
                         var arr = object.lines.reduce(function(array, content) {
                             array.push({id: uuidv4(), line: content});
@@ -153,7 +152,6 @@ export default function HomeScreen({ navigation }) {
                 </View>}
             >
             </FlatList>
-            <Button onPress={() => navigation.navigate('Favourites')}>Favourites</Button>
             <Button onPress={() => updatePoems(true)}>Refresh</Button>
         </SafeAreaView>
     )
