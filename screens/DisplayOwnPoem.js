@@ -1,51 +1,32 @@
-import { get, ref, remove, set } from "firebase/database";
+import { ref, remove } from "firebase/database";
 import { useEffect, useState } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
 import { db } from "../firebase.config";
-import { IconButton, Text } from "react-native-paper";
+import { Button, Dialog, IconButton, Portal, Text } from "react-native-paper";
 import { useAuth } from "../contexts/authContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import 'react-native-get-random-values';
 
-export default function DisplayPoem({ route, navigation }) {
+export default function DisplayOwnPoem({ route, navigation }) {
 
     const {poem} = route.params;
 
     const {user} = useAuth();
 
-    const [isFavourite, setIsFavourite] = useState(false);
+    const [visible, setVisible] = useState(false);
+    const showDialog = () => setVisible(true);
+    const hideDialog = () => setVisible(false);
 
-    function checkFav() {
-        get(ref(db, `users/${user.uid}/favourites/${poem.id}`))
-        .then((snapshot) => {
-            if (snapshot.val() === null){
-                setIsFavourite(false);
-            } else {
-                setIsFavourite(true);
-            }
-        })
-    };
-
-    const setFavourite = () => {
-        if (isFavourite === false) {
-            try {
-                setIsFavourite(true);
-                set(ref(db, `users/${user.uid}/favourites/${poem.id}`),  poem);
-            } catch(error) {
-                console.log(error);
-            }
-        } else {
-            try {
-                setIsFavourite(false);
-                remove(ref(db, `users/${user.uid}/favourites/${poem.id}`));
-            } catch(error) {
-                console.log(error);
-            }
+    const deletePoem = () => {
+        try {
+            remove(ref(db, `users/${user.uid}/poems/${poem.id}`));
+        } catch(error) {
+            console.log(error);
         }
     };
 
     useEffect(() => {
-        checkFav();
+        
     }, []);
 
     const renderItem = ({ item }) => (
@@ -63,13 +44,11 @@ export default function DisplayPoem({ route, navigation }) {
                 </View>
                 <View>
                     <IconButton 
-                            icon='heart'
+                            icon='delete'
                             animated={true}
                             size={30}
-                            selected={isFavourite}
-                            theme={{colors: {primary: '#874CCC', onSurfaceVariant: '#BEADFA'}}}
                             rippleColor={'pink'}
-                            onPress={() => setFavourite()}
+                            onPress={() => showDialog()}
                     >Favourite</IconButton>
                 </View>
             </View>
@@ -81,9 +60,20 @@ export default function DisplayPoem({ route, navigation }) {
                     keyExtractor={(item) => item.id}
                 ></FlatList>
             </View>
+            <Portal>
+                <Dialog visible={visible} onDismiss={() => hideDialog()}>
+                    <Dialog.Content>
+                        <Text>Delete this poem?</Text>
+                    </Dialog.Content>
+                    <Dialog.Actions>
+                        <Button onPress={() => hideDialog()}>Cancel</Button>
+                        <Button onPress={() => {deletePoem(), navigation.navigate('Fav')}}>Delete</Button>
+                    </Dialog.Actions>
+                </Dialog>
+            </Portal>
         </SafeAreaView>
     )
-}
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -102,8 +92,7 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         borderWidth: 3,
         borderColor: '#D0BFFF',
-        paddingHorizontal: 10,
-
+        paddingHorizontal: 10
     },
     title: {
         flex: 1,
@@ -115,12 +104,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         alignItems: 'center',
         width: '85%',
-        borderWidth: 3,
-        borderColor: '#D0BFFF',
         marginTop: 10,
         borderRadius: 20,
+        borderWidth: 3,
+        borderColor: '#D0BFFF',
         paddingVertical: 20,
-        rowGap: 10,
         marginBottom: 20
     },
     listItem: {

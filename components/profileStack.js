@@ -4,6 +4,8 @@ import TabNavigator from "./tabNavigator";
 import DisplayPoem from "../screens/DisplayPoem";
 import { Appbar, Menu } from "react-native-paper";
 import { useState } from "react";
+import { auth } from "../firebase.config";
+import DisplayOwnPoem from "../screens/DisplayOwnPoem";
 
 const Stack = createNativeStackNavigator();
 
@@ -58,8 +60,12 @@ const ProfileNavigator = () => {
                 name="Read"
                 component={DisplayPoem}
             />
+            <Stack.Screen
+                name="ReadOwn"
+                component={DisplayOwnPoem}
+            />
         </Stack.Navigator>
     )
 }
 
-export default ProfileNavigator
+export default ProfileNavigator;

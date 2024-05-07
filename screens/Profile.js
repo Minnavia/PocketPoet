@@ -3,15 +3,17 @@ import { Alert, StyleSheet, View } from "react-native";
 import { ref, onValue, set } from "firebase/database";
 import { db } from "../firebase.config";
 import { useAuth } from "../contexts/authContext";
-import { Button, Dialog, Divider, List, Portal, TextInput, Text, PaperProvider, Switch, Chip, SegmentedButtons, HelperText } from "react-native-paper";
-import { updateEmail, updatePassword, getIdToken, getAuth } from "firebase/auth";
+import { Button, Dialog, Divider, List, Portal, TextInput, Text, HelperText } from "react-native-paper";
+import { updateEmail, updatePassword, getAuth } from "firebase/auth";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Profile () {
 
     const auth = getAuth();
 
-    const {user, details} = useAuth();
+    const {user} = useAuth();
+
+    const [details, setDetails] = useState({});
 
     const [visible, setVisible] = useState(false);
     const [editable, setEditable] = useState({
@@ -19,11 +21,8 @@ export default function Profile () {
         value: '',
         explanation: ''
     });
-    const random = details.random;
-    const [isRandomOn, setIsRandomOn] = useState(random);
     const [edit, setEdit] = useState('');
     const [error, setError] = useState(false);
-
 
     const changeEmail = () => {
         updateEmail(auth.currentUser, edit)
@@ -49,7 +48,7 @@ export default function Profile () {
     }
 
     const showDialog = (n, val, exp) => {
-        setEditable({... editable, name: n, value: val, explanation: exp});
+        setEditable({name: n, value: val, explanation: exp});
         setVisible(true);
     };
 
@@ -64,22 +63,27 @@ export default function Profile () {
 
 
     const editDetails = () => {
-        console.log(edit);
         set(ref(db, `users/${user.uid}/details/${editable.name}`), Number(edit));
     };
 
-    const toggleRandom = (value) => {
-        set(ref(db, `users/${user.uid}/details/random`), value);
-        setIsRandomOn(value);
-        console.log('did we do it', isRandomOn);
-    };
+    useEffect(() => {
+        try {
+            const detailsRef = ref(db, `users/${user.uid}/details`);
+            onValue(detailsRef, (snapshot) => {
+                if(snapshot.val() === null) {
+                    console.log('nothing here');
+                } else {
+                    const data = snapshot.val();
+                    setDetails(data);
+                }
+            });
+        } catch(error) {
+            console.log(error);
+        }
+    },[])
 
     return(
         <SafeAreaView style={styles.container}>
-            <Text>Hello {details.name}!</Text>
-            <Text>{editable.value}</Text>
-            <Text>{edit}</Text>
-            <Text>RandomOn: {JSON.stringify(isRandomOn)}</Text>
             <View style={styles.list}>
                 <List.Section>
                     <List.Subheader>Personal details</List.Subheader>
@@ -121,27 +125,6 @@ export default function Profile () {
                         right={props => <List.Icon {...props} icon='pencil' />}
                     />
                     <Divider/>
-                    <List.Item
-                        title='Random'
-                        description={details.random}
-                        right={props => 
-                        <View style={styles.buttons}>
-                            <SegmentedButtons
-                                value={isRandomOn}
-                                onValueChange={(value) => toggleRandom(value)}
-                                buttons={[
-                                    {
-                                        value: true,
-                                        label: 'Enabled'
-                                    },
-                                    {
-                                        value: false,
-                                        label: 'Disabled'
-                                    }
-                                ]}
-                            />
-                        </View>}
-                    />
                 </List.Section>
             </View>
             <Portal>
@@ -149,11 +132,13 @@ export default function Profile () {
                     <Dialog.Title>{editable.name}</Dialog.Title>
                         {editable.name == 'email' || 'password' ? 
                             <Dialog.Content>
-                                <TextInput placeholder={editable.value} onChangeText={(text) => setEdit(text)} error={error} keyboardType="email-address" textContentType="emailAddress" autoCorrect={false} autoCapitalize="none"/> 
+                                <TextInput placeholder={editable.value} onChangeText={(text) => setEdit(text)} error={error} keyboardType="email-address" textContentType="emailAddress" autoCorrect={false} autoCapitalize="none"/>
+                                <Text>{editable.explanation}</Text>
                             </Dialog.Content> 
                             : <Dialog.Content>
                                 <TextInput placeholder={editable.value} onChangeText={(text) => setEdit(text)} error={error} keyboardType='numeric'/>
-                                <HelperText type="error" visible={hasNumericErrors()}>wrong af</HelperText>
+                                <Text>{editable.explanation}</Text>
+                                <HelperText type="error" visible={hasNumericErrors()}>{editable.name} should be a valid integer.</HelperText>
                             </Dialog.Content>}
                     <Dialog.Actions>
                         <Button onPress={() => hideDialog()}>exit</Button>
@@ -172,17 +157,20 @@ export default function Profile () {
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#fff',
+      backgroundColor: '#DFCCFB',
       alignItems: 'center',
       justifyContent: 'center',
     },
     list: {
         flex: 1,
-        backgroundColor: 'pink',
-        width: '90%'
+        backgroundColor: '#fff',
+        width: '85%',
+        borderRadius: 20,
+        borderWidth: 3,
+        borderColor: '#D0BFFF',
+        marginBottom: 20
     },
     buttons: {
-        backgroundColor: 'grey',
         flexDirection: 'row',
         width: 200,
         alignItems: 'flex-end'

@@ -7,8 +7,8 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { StyleSheet } from 'react-native';
 import SearchPoems from '../screens/SearchPoems';
-import Favourites from '../screens/Favourites';
 import HomeScreen from '../screens/HomeScreen';
+import FavouritesNavigator from './favStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -64,7 +64,7 @@ function TabNavigator() {
           options={{
             tabBarLabel: 'Search',
             tabBarIcon: ({color, size}) => {
-              return <MaterialIcons name='search' size={size} color={color}/>;
+              return <FontAwesome name='search' size={size} color={color}/>;
             }
           }}
       />
@@ -74,13 +74,13 @@ function TabNavigator() {
           options={{
             tabBarLabel: 'Home',
             tabBarIcon: ({color, size}) => {
-              return <MaterialIcons name='home' size={size} color={color}/>
+              return <FontAwesome6 name='house' size={size} color={color}/>
             }
           }}
       />
       <Tab.Screen
           name="Favourites"
-          component={Favourites}
+          component={FavouritesNavigator}
           options={{
             tabBarLabel: 'Favourites',
             tabBarIcon: ({color, size}) => {

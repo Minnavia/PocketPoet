@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { StyleSheet, View, Text, FlatList } from "react-native";
-import { Button, RadioButton } from 'react-native-paper';
+import { StyleSheet, View, FlatList } from "react-native";
+import { Button, IconButton, Menu } from 'react-native-paper';
 import { Searchbar } from 'react-native-paper';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
-import { List } from "react-native-paper";
+import { List, Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SearchPoems({navigation}) {
@@ -14,15 +14,23 @@ export default function SearchPoems({navigation}) {
     const [totalItems, setTotalItems] = useState(0);
     const [pageData, SetPageData] = useState([]);
     const [page, setPage] = useState(0);
+    const [error, setError] = useState(false);
 
-    const listSize = 10;
+    const [placeholder, setPlaceholder] = useState("Select search term.");
+    const [visible, setVisible] = useState(false);
+    const openMenu = () => setVisible(true);
+    const closeMenu = () => setVisible(false);
+
+    const listSize = 7;
     const from = page * listSize;
     const to = (page + 1) * listSize;
 
     const getResults = () => {
+        setPage(0);
         fetch(`https://poetrydb.org/${option}/${search}`)
         .then(response => response.json())
         .then(function (data) {
+            setError(false);
             console.log('trying to get data');
             newData = [];
             data.map(object => {
@@ -32,8 +40,9 @@ export default function SearchPoems({navigation}) {
             setTotalItems(newData.length);
             handleData(newData);
         })
-        .catch(err => {
-            console.log(err);
+        .catch((error) => {
+            console.log(error);
+            setError(true);
         })
     };
 
@@ -90,47 +99,61 @@ export default function SearchPoems({navigation}) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <Text>User option: {option}</Text>
-                <RadioButton.Group onValueChange={newValue => setOption(newValue)} value={option}>
-                    <View style={styles.radiobuttons}>
-                        <View>
-                            <Text>Author</Text>
-                            <RadioButton value="author"/>
-                        </View>
-                        <View>
-                            <Text>Title</Text>
-                            <RadioButton value="title"/>
-                        </View>
-                        <View>
-                            <Text>Lines</Text>
-                            <RadioButton value="lines"/>
-                        </View>
-                    </View>
-                </RadioButton.Group>
-            <Searchbar 
-                placeholder="search"
-                onChangeText={setSearch}
-                value={search}
-            />
-            <Button 
-                mode="contained"
-                onPress={()=> {getResults()}}
-            >Search</Button>
+            <View style={styles.search}>
+                <Menu
+                    visible={visible}
+                    onDismiss={closeMenu}
+                    contentStyle={{marginTop: 50, marginLeft: 20}}
+                    anchor={
+                        <Searchbar 
+                            placeholder={placeholder}
+                            onChangeText={setSearch}
+                            mode="bar"
+                            right={(props) => <IconButton icon='magnify' size={24} onPress={() => getResults()}/>}
+                            onTraileringIconPress={() => getResults()}
+                            icon={'menu'}
+                            onIconPress={openMenu}
+                            value={search}
+                            theme={{colors: {primary: '#874CCC'}}}
+                        />}
+                >
+                    <Menu.Item 
+                        title='Author'
+                        onPress={() => {setOption('author'), setPlaceholder('Author'), closeMenu()}}
+                    />
+                    <Menu.Item 
+                        title='Title'
+                        onPress={() => {setOption('title'), setPlaceholder('Title'), closeMenu()}}
+                    />
+                    <Menu.Item 
+                        title='Lines'
+                        onPress={() => {setOption('lines'), setPlaceholder('Lines'), closeMenu()}}
+                    />
+                </Menu>
+            </View>
             <View style={styles.list}>
-                <FlatList
+                {error ? <Text>ERROR: Did you select a search term?</Text>
+                : <FlatList
                     data={pageData[page]}
                     keyExtractor={(item) => item.id}
                     renderItem={renderItem}
+                    showsVerticalScrollIndicator={false}
                     >
-                </FlatList>
+                </FlatList>}
             </View>
             <View style={styles.pagination}>
                 <Button
+                    mode="contained"
+                    compact={true}
+                    buttonColor="#874CCC"
                     onPress={()=> {prevPage()}}>
                     Previous
                 </Button>
-                <Text>{`${from + 1}-${Math.min(to, totalItems)} of ${totalItems}`}</Text>
+                <Text variant='titleMedium' style={{marginHorizontal: 20}}>{`${from + 1} - ${Math.min(to, totalItems)} of ${totalItems}`}</Text>
                 <Button
+                    mode="contained"
+                    compact={true}
+                    buttonColor="#874CCC"
                     onPress={()=>{nextPage()}}>
                     Next
                 </Button>
@@ -142,26 +165,28 @@ export default function SearchPoems({navigation}) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#DFCCFB',
         alignItems: 'center',
         justifyContent: 'center',
     },
-    radiobuttons: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        columnGap: 20,
-    },
+    search: {
+        width: '85%',
+        paddingBottom: 20,
+    },  
     list: {
-        backgroundColor: 'pink',
+        backgroundColor: '#fff',
         flex: 1,
         alignItems: 'center',
         justifyContent:'center',
-        width: '100%'
+        width: '85%',
+        borderRadius: 20,
+        borderWidth: 3,
+        borderColor: '#D0BFFF',
     },
     pagination: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
+        margin: 10
     }
 });  

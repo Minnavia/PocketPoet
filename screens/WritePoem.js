@@ -1,15 +1,15 @@
-import { BlockquoteBridge, BoldBridge, ItalicBridge, RichText, StrikeBridge, Toolbar, useEditorBridge, useEditorContent } from "@10play/tentap-editor";
 import React, { useEffect } from "react";
 import { useState } from "react";
-import { Platform, KeyboardAvoidingView, Button, StyleSheet, Text, View } from "react-native";
+import { Platform, KeyboardAvoidingView, StyleSheet, Text, View } from "react-native";
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from "../firebase.config";
-import { push, ref } from "firebase/database";
+import { ref, set } from "firebase/database";
 import { useAuth } from "../contexts/authContext";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Button, TextInput } from "react-native-paper";
+import { RichEditor } from "react-native-pell-rich-editor";
 
-export default function WritePoem({navigation}) {
+export default function WritePoem({ navigation}) {
 
     const {user} = useAuth();
 
@@ -17,76 +17,81 @@ export default function WritePoem({navigation}) {
         title: '',
         author: '',
         lines: [],
+        id: '',
     });
+    const [title, setTitle] = useState('');
 
     const [lines, setLines] = useState('');
 
-    const editor = useEditorBridge({
-        autofocus: true,
-        avoidIosKeyboard: true,
-        initialContent,
-        /*bridgeExtensions: [
-            BlockquoteBridge,
-            ItalicBridge,
-            BoldBridge,
-            StrikeBridge,
-        ]*/
-    });
-
-    const initialContent = `<p>This is a basic example!</p>`;
-    const content = useEditorContent(editor, {type: 'html'});
-
-    const saveLines = () => {
-        setLines(content.toString());
-    };
-
-    useEffect(() => {
-        content && saveLines(content);
-    }, [content]);
-
     const savePoem = () => {
-        const array = lines.replace(/<p>/g, '').split('</p>');
-        const arr = array.reduce(function(array, content) {
+        const array = lines.replace(/<div>/g, '').split('</div>');
+        let arr = array.reduce(function(array, content) {
             array.push({id: uuidv4(), line: content});
             return array;
         }, []);
-        console.log(arr);
-        setPoem({author: user.displayName, title: 'jotain', lines: arr})
-        push(ref(db, `users/${user.uid}/poems/`), {author: user.displayName, title: 'jotain', lines: arr});
-        console.log(poem);
+        var id = uuidv4();
+        setPoem({...poem, id: id, title: title, author: user.displayName, lines: arr})
+        set(ref(db, `users/${user.uid}/poems/${id}`), {id: id, title: title, author: user.displayName, lines: arr});
+        this.RichText.setContentHTML('');
+        setPoem();
+        setTitle('');
     };
 
     const submitPoem = () => {
-        navigation.navigate('PocketPoet', {screen: 'Poem', params: {poem: poem}})
+        navigation.navigate('Read', {poem: poem})
     };
 
     return (
-        <SafeAreaView style={styles.editor}>
-            <RichText editor={editor} />
+        <View style={styles.container}>
+            <View style={styles.title}>
+                <TextInput 
+                    value={title}
+                    label="Title"
+                    style={{fontSize: 18, paddingLeft: 20, height: 60}}
+                    onChangeText={(text) => setTitle(text)}
+                />
+            </View>
+            <View style={styles.editor}>
+                <RichEditor
+                    ref={(r) => this.RichText = r}
+                    useContainer= {false}
+                    placeholder="Write your own poem!"
+                    onChange={(text) => setLines(text.toString())}
+                />
+            </View>
             <KeyboardAvoidingView 
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={styles.KeyboardAvoidingView}>
-                <Toolbar editor={editor}/>
+                style={styles.buttons}>
+                <Button mode="contained" onPress={() => {submitPoem()}}>Preview</Button>
+                <Button mode="contained" onPress={()=> {savePoem(), navigation.navigate('Favourites', {screen: 'Own'})}}>Save</Button>
             </KeyboardAvoidingView>
-            <Button title='save' onPress={()=> {savePoem()}}></Button>
-            <Button title='Read' onPress={() => {submitPoem()}}></Button>
-        </SafeAreaView>
+        </View>
     )
 };
 
 const styles = StyleSheet.create({
+    title: {
+        marginHorizontal: 30,
+        marginTop: 30,
+        marginBottom: 15,
+        width: '85%'
+    },
     container: {
         flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
+        backgroundColor: '#DFCCFB',
     },
     editor: {
-        flex: 1,
+        flex: 6,
+        marginHorizontal: 30,
+        borderWidth: 3,
+        borderColor: '#D0BFFF',
     },
-    keyboardAvoidingView: {
-        position: 'absolute',
-        width: '100%',
-        bottom: 0,
+    buttons: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        marginHorizontal: 30,
+        marginVertical: 10
     },
 });  

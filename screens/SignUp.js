@@ -3,7 +3,7 @@ import { View, StyleSheet, KeyboardAvoidingView } from "react-native";
 import { Text, TextInput, Button } from "react-native-paper";
 import { auth, db } from "../firebase.config";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { child, ref, set } from "firebase/database";
+import { ref, set } from "firebase/database";
 import { useAuth } from "../contexts/authContext";
 
 export default function SignUp({navigation}) {
@@ -26,7 +26,6 @@ export default function SignUp({navigation}) {
     }
 
     const userToDB = () => {
-        console.log('at db');
         const User = auth.currentUser
         set(ref(db, `users/${User.uid}`), {
             date: JSON.stringify(new Date()),
@@ -36,24 +35,27 @@ export default function SignUp({navigation}) {
                 min: 5,
                 max: 15,
                 poemCount: 3,
-                random: false,
             }
         });
-        console.log('we did it folks');
     };
 
     return(
-        <View style={styles.container}>
-            <KeyboardAvoidingView behavior="padding">
-                <Text>SignUp</Text>
+        <KeyboardAvoidingView style={styles.container} behavior="padding">
+            <Text style={{fontSize: 20}}>SignUp</Text>
+            <View style={styles.section}>
                 <Text>Name</Text>
                 <TextInput 
                     value={name}
                     autoCapitalize="none"
                     autoCorrect={false}
                     textContentType="name"
+                    autoFocus={true}
                     onChangeText={(text) => setName(text)}
+                    activeUnderlineColor="#874CCC"
+                    underlineColor="#BEADFA"
                 />
+            </View>
+            <View style={styles.section}>
                 <Text>Email</Text>
                 <TextInput 
                     value={email}
@@ -62,8 +64,11 @@ export default function SignUp({navigation}) {
                     autoCorrect={false}
                     keyboardType="email-address"
                     textContentType="emailAddress"
-                    autoFocus={true}
+                    activeUnderlineColor="#874CCC"
+                    underlineColor="#BEADFA"
                 />
+            </View>
+            <View style={styles.section}>
                 <Text>Password</Text>
                 <TextInput 
                     value={password}
@@ -72,24 +77,34 @@ export default function SignUp({navigation}) {
                     autoCapitalize="none"
                     textContentType="password"
                     showSoftInputOnFocus={false}
+                    activeUnderlineColor="#874CCC"
+                    underlineColor="#BEADFA"
                 />
                 <Text>{error}</Text>
-                <Button
+            </View>
+                <Button 
+                    mode="contained"
+                    buttonColor="#874CCC"
+                    rippleColor='#BEADFA'
                     onPress={() => handleSignUp()}
                 >Sign up</Button>
                 <Button
                     onPress={() => navigation.navigate('Login')}
                 >Already have an account?</Button>
-            </KeyboardAvoidingView>
-        </View>
+        </KeyboardAvoidingView>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
-      flex: 1,
-      backgroundColor: '#fff',
-      alignItems: 'center',
-      justifyContent: 'center',
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
+    section: {
+        backgroundColor: '#fff',
+        width: '50%',
+        paddingBottom: 10
+    }
   });  

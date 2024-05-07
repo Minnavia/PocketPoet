@@ -5,24 +5,24 @@ import { List, SegmentedButtons, Text } from "react-native-paper";
 import { onValue, ref } from "firebase/database";
 import { useAuth } from "../contexts/authContext";
 
-export default function Favourites({navigation}){
+export default function MyPoems({navigation}){
 
     const {user} = useAuth();
 
-    const [screenShown, setScreenShown] = useState('fav');
-    const [favourites, setFavourites] = useState([]);
-    const [hasFavourites, setHasFavourites] = useState(false);
+    const [screenShown, setScreenShown] = useState('own');
+    const [myPoems, setMyPoems] = useState([]);
+    const [hasPoems, setHasPoems] = useState(false);
 
-    const getFavourites = () => {
+    const getMyPoems = () => {
         try {
-            const favRef = ref(db, `users/${user.uid}/favourites/`);
-            onValue(favRef, (snapshot) => {
+            const ownRef = ref(db, `users/${user.uid}/poems/`);
+            onValue(ownRef, (snapshot) => {
                 if (snapshot.val() === null) {
-                    setHasFavourites(false);
+                    setHasPoems(false);
                 } else {
-                    setHasFavourites(true);
                     const data = snapshot.val();
-                    setFavourites(Object.values(data));
+                    setMyPoems(Object.values(data));
+                    setHasPoems(true);
                 }
             });
         } catch (error) {
@@ -31,18 +31,19 @@ export default function Favourites({navigation}){
     };
 
     useEffect(() => {
-        setScreenShown('fav');
-        getFavourites();
+        getMyPoems();
     }, [])
 
     renderItem = ({item}) => (
-        <List.Item
-            title={item.title}
-            description={item.author}
-            onPress={() => {
-                console.log(item);
-                navigation.navigate('Read', {poem: item})}}
-        />
+        <View style={styles.listItem}>
+            <List.Item
+                title={item.title}
+                description={item.author}
+                onPress={() => {
+                    console.log(item);
+                    navigation.navigate('ReadOwn', {poem: item})}}
+            />
+        </View>
     );
 
     return(
@@ -55,30 +56,30 @@ export default function Favourites({navigation}){
                         {
                             value: 'fav',
                             label: 'Favourites',
+                            onPress: (() => navigation.navigate('Fav')),
                             style: {
-                                backgroundColor: '#D0BFFF'
-                                
+                                backgroundColor: '#fff'
                             }
                         },
                         {
                             value: 'own',
                             label: 'My poems',
-                            onPress: (() => navigation.navigate('Own')),
                             style: {
-                                backgroundColor: '#fff'
+                                backgroundColor: '#D0BFFF'
                             }
                         }
                     ]}
                 />
             </View>
             <View style={styles.list}>
-                {hasFavourites ? <FlatList 
-                    data={favourites}
+                {hasPoems ? <FlatList 
+                    data={myPoems}
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id}
                 /> : <Text>Nothing here</Text>}
             </View>
         </View>
+
     )
 };
 
@@ -87,7 +88,7 @@ const styles = StyleSheet.create({
       flex: 1,
       backgroundColor: '#DFCCFB',
       alignItems: 'center',
-      justifyContent: 'center',
+      justifyContent: 'center'
     },
     buttons: {
         justifyContent: 'center',
@@ -104,5 +105,8 @@ const styles = StyleSheet.create({
         borderWidth: 3,
         borderColor: '#D0BFFF',
         marginBottom: 20
+    },
+    listItem: {
+        flex: 1,
     }
 });
