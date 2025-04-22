@@ -4,7 +4,7 @@ import { Platform, KeyboardAvoidingView, StyleSheet, Text, View } from "react-na
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from "../firebase.config";
-import { ref, set } from "firebase/database";
+import { onValue, ref, set } from "firebase/database";
 import { useAuth } from "../contexts/authContext";
 import { Button, TextInput } from "react-native-paper";
 import { RichEditor } from "react-native-pell-rich-editor";
@@ -20,7 +20,6 @@ export default function WritePoem({ navigation}) {
         id: '',
     });
     const [title, setTitle] = useState('');
-
     const [lines, setLines] = useState('');
 
     const savePoem = () => {
@@ -37,9 +36,21 @@ export default function WritePoem({ navigation}) {
         setTitle('');
     };
 
-    const submitPoem = () => {
-        navigation.navigate('Read', {poem: poem})
-    };
+    useEffect(() => {
+        try {
+            const detailsRef = ref(db, `users/${user.uid}/details`);
+            onValue(detailsRef, (snapshot) => {
+                if(snapshot.val() === null) {
+                    console.log('data snapshot null');
+                } else {
+                    const data = snapshot.val();
+                    setPoem({...poem, author: data.name});
+                }
+            })
+        } catch (error) {
+            console.log(error);
+        }
+    }, [])
 
     return (
         <View style={styles.container}>
@@ -62,7 +73,6 @@ export default function WritePoem({ navigation}) {
             <KeyboardAvoidingView 
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={styles.buttons}>
-                <Button mode="contained" onPress={() => {submitPoem()}}>Preview</Button>
                 <Button mode="contained" onPress={()=> {savePoem(), navigation.navigate('Favourites', {screen: 'Own'})}}>Save</Button>
             </KeyboardAvoidingView>
         </View>

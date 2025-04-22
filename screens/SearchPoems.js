@@ -11,6 +11,7 @@ export default function SearchPoems({navigation}) {
 
     const [search, setSearch] = useState('');
     const [option, setOption] = useState('none selected');
+    
     const [totalItems, setTotalItems] = useState(0);
     const [pageData, SetPageData] = useState([]);
     const [page, setPage] = useState(0);
@@ -31,12 +32,10 @@ export default function SearchPoems({navigation}) {
         .then(response => response.json())
         .then(function (data) {
             setError(false);
-            console.log('trying to get data');
             newData = [];
             data.map(object => {
                 newData.push({id: uuidv4(), author: object.author, title: object.title, linecount: object.linecount, lines: object.lines});
             });
-            console.log('data map success', newData.length);
             setTotalItems(newData.length);
             handleData(newData);
         })
@@ -47,7 +46,6 @@ export default function SearchPoems({navigation}) {
     };
 
     const makeIDs = (item) => {
-        console.log('Trying to id: ', item);
         var arr = item.lines.reduce(function(array, content) {
             array.push({id: uuidv4(), line: content});
             return array;
@@ -56,11 +54,10 @@ export default function SearchPoems({navigation}) {
     };
 
     const handleData = (newData) => {
-        console.log('setting page data');
-        SetPageData(SplitIntoChunks(newData, listSize));
+        SetPageData(splitIntoChunks(newData, listSize));
     };
 
-    function SplitIntoChunks(arr, chunkSize) {
+    function splitIntoChunks(arr, chunkSize) {
         if (chunkSize <= 0) throw 'Invalid Chunk size';
         let result = [];
         for (let i = 0, len = arr.length; i < len; i += chunkSize)
@@ -71,10 +68,8 @@ export default function SearchPoems({navigation}) {
 
     const nextPage = () => {
         if (page < Math.floor(totalItems / listSize)) {
-            console.log(page, ' smaller than ', Math.floor(totalItems / listSize))
             setPage(page + 1);
         } else {
-            console.log('else');
             setPage(page);
         }
     };
