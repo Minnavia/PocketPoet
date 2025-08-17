@@ -9,6 +9,7 @@ import { ref, onValue, push, remove, set, get } from "firebase/database";
 import { auth } from "../firebase.config";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/authContext";
+import GlobalStyles from "../constants/GlobalStyles";
 
 export default function HomeScreen({ navigation }) {
 
@@ -143,7 +144,7 @@ export default function HomeScreen({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.title}>
+            <View>
                 <Text style={{fontSize: 18}}>Your daily poems, {details.name}:</Text>
             </View>
             {poems.length === 0 ? 

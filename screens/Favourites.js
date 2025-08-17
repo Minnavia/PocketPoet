@@ -1,7 +1,7 @@
 import { db } from "../firebase.config";
 import { FlatList, StyleSheet, View } from "react-native";
 import { useEffect, useState } from "react";
-import { List, SegmentedButtons, Text } from "react-native-paper";
+import { List, Text } from "react-native-paper";
 import { onValue, ref } from "firebase/database";
 import { useAuth } from "../contexts/authContext";
 
@@ -47,30 +47,6 @@ export default function Favourites({navigation}){
 
     return(
         <View style={styles.container}>
-            <View style={styles.buttons}>
-                <SegmentedButtons 
-                    value={screenShown}
-                    onValueChange={setScreenShown}
-                    buttons={[
-                        {
-                            value: 'fav',
-                            label: 'Favourites',
-                            style: {
-                                backgroundColor: '#D0BFFF'
-                                
-                            }
-                        },
-                        {
-                            value: 'own',
-                            label: 'My poems',
-                            onPress: (() => navigation.navigate('Own')),
-                            style: {
-                                backgroundColor: '#fff'
-                            }
-                        }
-                    ]}
-                />
-            </View>
             <View style={styles.list}>
                 {hasFavourites ? <FlatList 
                     data={favourites}

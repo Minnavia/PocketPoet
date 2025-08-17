@@ -6,6 +6,7 @@ import { IconButton, Text } from "react-native-paper";
 import { useAuth } from "../contexts/authContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import 'react-native-get-random-values';
+import GlobalStyles from "../constants/GlobalStyles";
 
 export default function DisplayPoem({ route, navigation }) {
 
@@ -58,8 +59,8 @@ export default function DisplayPoem({ route, navigation }) {
         <SafeAreaView style={styles.container}>
             <View style={styles.banner}>
                 <View style={styles.title}>
-                    <Text style={{fontSize: 15}}>{poem.title}</Text>
-                    <Text style={{fontSize: 14}}>{poem.author}</Text>
+                    <Text>{poem.title}</Text>
+                    <Text>{poem.author}</Text>
                 </View>
                 <View>
                     <IconButton 

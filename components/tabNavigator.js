@@ -1,5 +1,4 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import WritePoem from '../screens/WritePoem';
 import { BottomNavigation } from 'react-native-paper';
 import { CommonActions } from '@react-navigation/native';
 import { FontAwesome6 } from '@expo/vector-icons';
@@ -7,7 +6,8 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { StyleSheet } from 'react-native';
 import SearchPoems from '../screens/SearchPoems';
 import HomeScreen from '../screens/HomeScreen';
-import FavouritesNavigator from './favStack';
+import Favourites from '../screens/Favourites';
+import GlobalStyles from '../constants/GlobalStyles';
 
 const Tab = createBottomTabNavigator();
 
@@ -15,7 +15,7 @@ function TabNavigator() {
   return (
     <Tab.Navigator 
         screenOptions={{
-          headerShown: false
+          headerShown: false,
         }}
         initialRouteName='PocketPoet'
         tabBar={({navigation, state, descriptors, insets}) => (
@@ -79,21 +79,11 @@ function TabNavigator() {
       />
       <Tab.Screen
           name="Favourites"
-          component={FavouritesNavigator}
+          component={Favourites}
           options={{
             tabBarLabel: 'Favourites',
             tabBarIcon: ({color, size}) => {
               return <FontAwesome name='heart' size={size} color={color}/>
-            }
-          }}
-      />
-      <Tab.Screen 
-          name="Write" 
-          component={WritePoem}
-          options={{
-            tabBarLabel: 'Write',
-            tabBarIcon: ({color, size}) => {
-              return <FontAwesome6 name='feather-pointed' size={size} color={color}/>
             }
           }}
       />
