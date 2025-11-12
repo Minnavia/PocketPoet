@@ -9,7 +9,6 @@ export default function Favourites({navigation}){
 
     const {user} = useAuth();
 
-    const [screenShown, setScreenShown] = useState('fav');
     const [favourites, setFavourites] = useState([]);
     const [hasFavourites, setHasFavourites] = useState(false);
 
@@ -31,11 +30,10 @@ export default function Favourites({navigation}){
     };
 
     useEffect(() => {
-        setScreenShown('fav');
         getFavourites();
     }, [])
 
-    renderItem = ({item}) => (
+    const renderItem = ({item}) => (
         <List.Item
             title={item.title}
             description={item.author}

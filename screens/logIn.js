@@ -1,14 +1,15 @@
-import { StyleSheet, View, Text, KeyboardAvoidingView } from "react-native"
-import {TextInput} from "react-native-paper"
+import { StyleSheet, View, Text, KeyboardAvoidingView, AccessibilityInfo, TouchableOpacity, accessibilityHint } from "react-native"
 import { signInWithEmailAndPassword } from "firebase/auth"
 import { auth } from "../firebase.config"
 import { useState } from "react"
-import { Button } from "react-native-paper";
+import { Button, TextInput } from "react-native-paper";
+
 
 export default function LogIn({navigation}) {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+
 
     const handleLogIn = async() => {
         try {
@@ -33,19 +34,20 @@ export default function LogIn({navigation}) {
                     onChangeText={(text) => setEmail(text)}
                     activeUnderlineColor="#874CCC"
                     underlineColor="#BEADFA"
+                    accessible={true}
                 />
             </View>
             <View style={styles.section}>
-            <Text>Password</Text>
+                <Text>Password</Text>
                 <TextInput
                     autoCapitalize="none"
-                    autoCorrect={false}
-                    secureTextEntry={true}
                     textContentType="password"
+                    autoFocus={true}
                     value={password}
                     onChangeText={(text) => setPassword(text)}
                     activeUnderlineColor="#874CCC"
                     underlineColor="#BEADFA"
+                    accessible={true}
                 />
             </View>
             <Button
@@ -72,5 +74,28 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         width: '50%',
         paddingBottom: 10
+    },
+    input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#333',
+    },
+    focused: {
+        borderColor: '#007AFF',
+        shadowColor: '#007AFF',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+    },
+    error: {
+        borderColor: '#FF3B30',
+    },
+    errorText: {
+        color: '#FF3B30',
+        fontSize: 14,
+        marginTop: 4,
     },
 })

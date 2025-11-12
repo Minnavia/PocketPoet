@@ -130,7 +130,7 @@ export default function HomeScreen({ navigation }) {
         getDetails();
     }, []);
 
-    renderItem = ({item}) => (
+    const renderItem = ({item}) => (
         <View style={styles.listItem}>
             <List.Item
                 title={item.title}

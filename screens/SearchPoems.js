@@ -82,7 +82,7 @@ export default function SearchPoems({navigation}) {
         }
     };
 
-    renderItem = ({item}) => (
+    const renderItem = ({item}) => (
             <List.Item
                 title={item.title}
                 description={item.author}
