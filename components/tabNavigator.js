@@ -1,15 +1,91 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BottomNavigation } from 'react-native-paper';
-import { CommonActions } from '@react-navigation/native';
+import { CommonActions, useLinkBuilder, useTheme } from '@react-navigation/native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import SearchPoems from '../screens/SearchPoems';
 import HomeScreen from '../screens/HomeScreen';
 import Favourites from '../screens/Favourites';
 import GlobalStyles from '../constants/GlobalStyles';
+import { PlatformPressable } from '@react-navigation/elements';
 
 const Tab = createBottomTabNavigator();
+
+function CustomTabs({state, descriptors, navigation}) {
+  const {colors} = useTheme();
+  const {buildHref} = useLinkBuilder();
+  
+  return (
+    <View style={{flexDirection: 'row'}}>
+      {state.routes.map((route, index) => {
+        const {options} = descriptors[route.key];
+        const label = options.tabBarLabel !== undefined
+          ? options.tabBarLabel
+          : options.title !== undefined
+            ? options.title
+            : route.name;
+
+        const isFocused = state.index === index;
+
+        const onPress = () => {
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
+
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name, route.params);
+          }
+        };
+
+        const onLongPress = () => {
+          navigation.emit({
+            type: 'tabLongPress',
+            target: route.key,
+          });
+        };
+
+        return (
+          <PlatformPressable
+            key={route.key}
+            href={buildHref(route.name, route.params)}
+            accessibilityState={isFocused ? { selected: true } : {}}
+            accessibilityLabel={options.tabBarAccessibilityLabel}
+            testID={options.tabBarButtonTestID}
+            onPress={onPress}
+            onLongPress={onLongPress}
+            style={{flex: 1}}
+          >
+            <Text style={{color: isFocused ? colors.primary : colors.text}}>
+              {label}
+            </Text>
+          </PlatformPressable>
+        )
+      })}
+    </View>
+  )
+};
+
+function MyTabs() {
+  return (
+    <Tab.Navigator
+      initialRouteName='Home'
+      
+    >
+      <Tab.Screen 
+        name="Search" 
+        component={SearchPoems}/>
+      <Tab.Screen 
+        name="Home" 
+        component={HomeScreen}/>
+      <Tab.Screen 
+        name="Favourites" 
+        component={Favourites}/>
+    </Tab.Navigator>
+  );
+};
 
 function TabNavigator() {
   return (
@@ -91,6 +167,8 @@ function TabNavigator() {
   );
 }
 
+export default TabNavigator;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -99,5 +177,3 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
-
-export default TabNavigator;

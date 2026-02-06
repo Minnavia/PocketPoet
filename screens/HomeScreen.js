@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { View, FlatList, StyleSheet, Alert } from "react-native";
+import { View, FlatList, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import 'react-native-get-random-values';
 import { stringify, v4 as uuidv4 } from 'uuid';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,7 +9,8 @@ import { ref, onValue, push, remove, set, get } from "firebase/database";
 import { auth } from "../firebase.config";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/authContext";
-import GlobalStyles from "../constants/GlobalStyles";
+import {experimental_accessibilityOrder} from "react-native";
+import GlobalVariables from "../constants/GlobalVariables";
 
 export default function HomeScreen({ navigation }) {
 
@@ -26,6 +27,17 @@ export default function HomeScreen({ navigation }) {
         }
         console.log('Linecounts ', linecounts);
         return linecounts.map(linecount => `https://poetrydb.org/random,linecount/1;${linecount}`)
+    };
+
+    //generate random requests with no linecount limits
+    const generateRandomRequests = () => {
+        var requests = []
+        for (let i = 0; i < details.poemCount; i++) {
+            requests.push(`https://poetrydb.org/random`);
+            console.log(details.poemCount);
+        }
+        console.log('requests ', requests);
+        return requests;
     };
 
     //check if the day has changed
@@ -52,7 +64,8 @@ export default function HomeScreen({ navigation }) {
     const updatePoems = (dayChange) => {
         if (dayChange === true) {
             console.log('Fetching poems.');
-            const endpoints = generateRequests();
+            const endpoints = generateRandomRequests();
+            console.log("random poems ", endpoints);
             const fetchPromises = endpoints.map(endpoint => fetch(endpoint));
             Promise.all(fetchPromises)
             .then(function (responses) {
@@ -61,6 +74,7 @@ export default function HomeScreen({ navigation }) {
                 }));
             })
             .then(function (data) {
+                console.log("Data before mapping", data)
                 data = data.map(object => {
                     var arr = object[0].lines.reduce(function(array, content) {
                         array.push({id: uuidv4(), line: content});
@@ -104,17 +118,20 @@ export default function HomeScreen({ navigation }) {
                     console.log('data snapshot null');
                 } else {
                     const data = snapshot.val();
+                    console.log(data);
                     setDetails(data);
                 }
             })
             get(ref(db, `users/${user.uid}/dailies/`))
             .then((snapshot) => {
             if (snapshot.val() === null || refresh === true) {
+                console.log('nothing here, new account?', snapshot.val())
                 updatePoems(true);
             } else {
                 try {
                     get(ref(db, `users/${user.uid}/date`))
                     .then((snapshot) => {
+                        console.log('checking date');
                         hasDayChanged(JSON.parse(snapshot.val()));
                     })
                 } catch(error) {
@@ -126,8 +143,15 @@ export default function HomeScreen({ navigation }) {
         }
     };
 
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
         getDetails();
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 2000);
+
+        return () => clearTimeout(timer);
     }, []);
 
     const renderItem = ({item}) => (
@@ -143,22 +167,29 @@ export default function HomeScreen({ navigation }) {
     );
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View>
-                <Text style={{fontSize: 18}}>Your daily poems, {details.name}:</Text>
-            </View>
-            {poems.length === 0 ? 
-            <View style={styles.list}>
-                <Button onPress={() => updatePoems(true)}>Fetch your first poems!</Button>
-            </View>
-            : <View style={styles.list}>
-                <FlatList
-                    data={poems}
-                    keyExtractor={(item) => item.id}
-                    renderItem={renderItem}
-                />
-                <Button onPress={() => getDetails(true)}>Refresh</Button>
-            </View>}
+        <SafeAreaView style={styles.container} experimental_accessibilityOrder={['list', 'button', 'header']}>
+            {loading ? (
+                <ActivityIndicator size='large' color='#0000ff'/>
+            ) : (
+                <>
+                    <View nativeID="header">
+                        <Text style={{fontSize: 18}}>Your daily poems, {details.name}:</Text>
+                    </View>
+                    {poems.length === 0 ?
+                    <View style={styles.list} nativeID="button">
+                        <Button onPress={() => updatePoems(true)}>Fetch your first poems!</Button>
+                    </View>
+                    : <View style={styles.list} nativeID="list">
+                        <FlatList
+                            data={poems}
+                            keyExtractor={(item) => item.id}
+                            renderItem={renderItem}
+                        />
+                        <Button onPress={() => getDetails(true)}>Refresh</Button>
+                    </View>}
+                </>
+                )
+            }
         </SafeAreaView>
     )
 };

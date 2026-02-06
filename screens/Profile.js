@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react"
-import { Alert, StyleSheet, View } from "react-native";
+import { Alert, Modal, StyleSheet, View } from "react-native";
 import { ref, onValue, set } from "firebase/database";
 import { db } from "../firebase.config";
 import { useAuth } from "../contexts/authContext";
-import { Button, Dialog, Divider, List, Portal, TextInput, Text, HelperText } from "react-native-paper";
+import { Button, Divider, List, TextInput, Text } from "react-native-paper";
 import { updateEmail, updatePassword, getAuth } from "firebase/auth";
 import { SafeAreaView } from "react-native-safe-area-context";
+import GlobalStyles from "../constants/GlobalStyles";
+import GlobalVariables from "../constants/GlobalVariables";
+
 
 export default function Profile () {
 
@@ -48,11 +51,13 @@ export default function Profile () {
     }
 
     const showDialog = (n, val, exp) => {
+        GlobalVariables.openModal;
         setEditable({name: n, value: val, explanation: exp});
         setVisible(true);
     };
 
     const hideDialog = () => {
+        GlobalVariables.openModal;
         setVisible(false);
     };
 
@@ -85,19 +90,25 @@ export default function Profile () {
     return(
         <SafeAreaView style={styles.container}>
             <View style={styles.list}>
-                <List.Section>
+                <List.Section experimental_accessibilityOrder={["C", "B", "A"]}>
                     <List.Subheader>Personal details</List.Subheader>
                     <List.Item 
+                        accessible={true}
+                        nativeID="A"
                         title='Name'
                         description={details.name}
                     />
                     <List.Item
-                        title='Email'
+                        nativeID="B"
+                        aria-hidden={true}
+                        title='do not perceive'
                         description={details.email}
                         onPress={() => showDialog('email', (details.email), 'change email')}
                     />
                     <List.Item
-                        title='Password'
+                        nativeID="C"
+                        focusable={false}
+                        title='shit'
                         description={user.password}
                         onPress={() => showDialog('password', '', 'change password')}
                     />
@@ -127,29 +138,56 @@ export default function Profile () {
                     <Divider/>
                 </List.Section>
             </View>
-            <Portal>
-                <Dialog visible={visible} onDismiss={hideDialog}>
-                    <Dialog.Title>{editable.name}</Dialog.Title>
-                        {editable.name == 'email' || 'password' ? 
-                            <Dialog.Content>
-                                <TextInput placeholder={editable.value} onChangeText={(text) => setEdit(text)} error={error} keyboardType="email-address" textContentType="emailAddress" autoCorrect={false} autoCapitalize="none"/>
-                                <Text>{editable.explanation}</Text>
-                            </Dialog.Content> 
-                            : <Dialog.Content>
-                                <TextInput placeholder={editable.value} onChangeText={(text) => setEdit(text)} error={error} keyboardType='numeric'/>
-                                <Text>{editable.explanation}</Text>
-                                <HelperText type="error" visible={hasNumericErrors()}>{editable.name} should be a valid integer.</HelperText>
-                            </Dialog.Content>}
-                    <Dialog.Actions>
-                        <Button onPress={() => hideDialog()}>exit</Button>
-                        {editable.name == 'email' ?
-                            <Button onPress={() =>  {changeEmail(), hideDialog()}}>Edit</Button>
-                        : editable.name == 'password' ? 
-                            <Button onPress={() => {changePassword(), hideDialog()}}>Edit</Button> 
-                        : <Button onPress={() => {editDetails(), hideDialog()}} disabled={hasNumericErrors()}>Edit</Button>}
-                    </Dialog.Actions>
-                </Dialog>
-            </Portal>
+            <View style={[styles.overlay, visible ? {backgroundColor: 'rgba(0, 0, 0, 0.5)'} : '']}>
+                <View style={styles.modalFlex}>
+                    <Modal 
+                        visible={visible}
+                        onDismiss={hideDialog}
+                        transparent={true} 
+                        animationType="fade"
+                        statusBarTranslucent={true}
+                    >
+                        <View style={styles.modal}>
+                            <View style={styles.modalContent}>
+                                <Text>{editable.name}</Text>
+                                {editable.name == 'email' || 'password' ?
+                                <View>
+                                    <TextInput 
+                                        placeholder={editable.value}
+                                        onChangeText={(text) => setEdit(text)}
+                                        error={error} 
+                                        keyboardType="email-address"
+                                        textContentType="emailAddress" 
+                                        autoCorrect={false} 
+                                        autoCapitalize="none"
+                                    />
+                                    <Text>{editable.explanation}</Text>
+                                </View>
+                                :
+                                <View>
+                                    <TextInput 
+                                        placeholder={editable.value}
+                                        onChangeText={(text) => setEdit(text)} 
+                                        error={error} 
+                                        keyboardType='numeric'
+                                    />
+                                    <Text>{editable.explanation}</Text>
+                                    <Text type="error" visible={hasNumericErrors()}>{editable.name} should be a valid integer.</Text>
+                                </View>
+                                }
+                            </View>
+                            <View style={styles.buttons}>
+                                {editable.name == 'email' ?
+                                <Button onPress={() =>  {changeEmail(), hideDialog()}}>Edit</Button>
+                                : editable.name == 'password' ? 
+                                    <Button onPress={() => {changePassword(), hideDialog()}}>Edit</Button> 
+                                : <Button onPress={() => {editDetails(), hideDialog()}} disabled={hasNumericErrors()}>Edit</Button>}
+                                <Button onPress={() => hideDialog()}>exit</Button>
+                            </View>
+                        </View>
+                    </Modal>
+                </View>
+            </View>
         </SafeAreaView>
     )
 }
@@ -157,9 +195,10 @@ export default function Profile () {
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#DFCCFB',
+      backgroundColor: '#b699e3ff',
       alignItems: 'center',
       justifyContent: 'center',
+      borderColor: '#3744f7ff'
     },
     list: {
         flex: 1,
@@ -174,5 +213,32 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         width: 200,
         alignItems: 'flex-end'
+    },
+    modalContent: {
+        padding: 10,
+        
+    },
+    modal: {
+        justifyContent: 'center',
+        backgroundColor: '#f08dd7ff',
+        borderColor: '#cd4ee6ff',
+        borderWidth: 5,
+        top: '40%',
+        padding: 20,
+        borderRadius: 20,
+        borderWidth: 3,
+        
+    },
+    overlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+    },
+    modalFlex: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });

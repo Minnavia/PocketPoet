@@ -2,11 +2,12 @@ import { NavigationContainer } from '@react-navigation/native';
 import { auth } from './firebase.config';
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { PaperProvider } from 'react-native-paper';
 import AuthNavigator from './components/stackAuth';
 import { AuthProvider } from './contexts/authContext';
 import ProfileNavigator from './components/profileStack';
+import { StyleSheet } from 'react-native';
 
 export default function App() {
 

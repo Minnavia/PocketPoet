@@ -17,9 +17,10 @@ export default function SignUp({navigation}) {
 
     const handleSignUp = async() => {
         try {
+            console.log("here for some reason");
             await createUserWithEmailAndPassword(auth, email, password);
             await updateProfile(auth.currentUser, {displayName: name})
-            .then(userToDB())
+            .then(userToDB());
         } catch(error) {
             setError(error.message);
         }

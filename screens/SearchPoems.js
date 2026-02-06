@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { StyleSheet, View, FlatList } from "react-native";
-import { Button, IconButton, Menu } from 'react-native-paper';
+import { StyleSheet, View, FlatList, findNodeHandle, Pressable } from "react-native";
+import { Button, SegmentedButtons } from 'react-native-paper';
 import { Searchbar } from 'react-native-paper';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
@@ -10,29 +10,38 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function SearchPoems({navigation}) {
 
     const [search, setSearch] = useState('');
-    const [option, setOption] = useState('none selected');
+    const [option, setOption] = useState('');
     
     const [totalItems, setTotalItems] = useState(0);
     const [pageData, SetPageData] = useState([]);
     const [page, setPage] = useState(0);
     const [error, setError] = useState(false);
 
-    const [placeholder, setPlaceholder] = useState("Select search term.");
-    const [visible, setVisible] = useState(false);
-    const openMenu = () => setVisible(true);
-    const closeMenu = () => setVisible(false);
-
     const listSize = 7;
     const from = page * listSize;
     const to = (page + 1) * listSize;
+
+    function splitIntoChunks(arr, chunkSize) {
+        if (chunkSize <= 0) throw 'Invalid Chunk size';
+        let result = [];
+        for (let i = 0, len = arr.length; i < len; i += chunkSize)
+          result.push(arr.slice(i, i + chunkSize));
+        console.log(result[0].length);
+        return result;
+    };
+
+    const handleData = (newData) => {
+        SetPageData(splitIntoChunks(newData, listSize));
+    };
 
     const getResults = () => {
         setPage(0);
         fetch(`https://poetrydb.org/${option}/${search}`)
         .then(response => response.json())
         .then(function (data) {
+            console.log(data);
             setError(false);
-            newData = [];
+            var newData = [];
             data.map(object => {
                 newData.push({id: uuidv4(), author: object.author, title: object.title, linecount: object.linecount, lines: object.lines});
             });
@@ -51,19 +60,6 @@ export default function SearchPoems({navigation}) {
             return array;
         }, []);
         return ({id: item.id, title: item.title, author: item.author, lines: arr});
-    };
-
-    const handleData = (newData) => {
-        SetPageData(splitIntoChunks(newData, listSize));
-    };
-
-    function splitIntoChunks(arr, chunkSize) {
-        if (chunkSize <= 0) throw 'Invalid Chunk size';
-        let result = [];
-        for (let i = 0, len = arr.length; i < len; i += chunkSize)
-          result.push(arr.slice(i, i + chunkSize));
-        console.log(result[0].length);
-        return result;
     };
 
     const nextPage = () => {
@@ -90,51 +86,66 @@ export default function SearchPoems({navigation}) {
                     console.log(item);
                     navigation.navigate('Read', {poem: makeIDs(item)})}}
             />
-    )
+    );
+
+    const getButtonStyle = (value) => {
+        if(option == value) {
+            return {
+                backgroundColor: '#e47cdbff'
+            }
+        } else {
+            return {
+                backgroundColor: '#ffff'   
+            }
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.search}>
-                <Menu
-                    visible={visible}
-                    onDismiss={closeMenu}
-                    contentStyle={{marginTop: 50, marginLeft: 20}}
-                    anchor={
-                        <Searchbar 
-                            placeholder={placeholder}
-                            onChangeText={setSearch}
-                            mode="bar"
-                            right={(props) => <IconButton icon='magnify' size={24} onPress={() => getResults()}/>}
-                            onTraileringIconPress={() => getResults()}
-                            icon={'menu'}
-                            onIconPress={openMenu}
-                            value={search}
-                            theme={{colors: {primary: '#874CCC'}}}
-                        />}
-                >
-                    <Menu.Item 
-                        title='Author'
-                        onPress={() => {setOption('author'), setPlaceholder('Author'), closeMenu()}}
+            <View style={styles.flex}>
+                <View style={styles.search}>
+                    <SegmentedButtons
+                        value={option}
+                        onValueChange={setOption}
+                        buttons={[
+                            {
+                                value: 'author',
+                                label: 'Author',
+                                style: getButtonStyle('author'),
+                            },
+                            {
+                                value: 'title',
+                                label: 'Title',
+                                style: getButtonStyle('title')
+                            },
+                            {
+                                value: 'lines',
+                                label: 'Lines',
+                                style: getButtonStyle('lines')
+                            }
+                        ]}
                     />
-                    <Menu.Item 
-                        title='Title'
-                        onPress={() => {setOption('title'), setPlaceholder('Title'), closeMenu()}}
+                </View>
+                <View style={styles.search}>
+                    <Searchbar 
+                        autoFocus={false}
+                        onChangeText={setSearch}
+                        mode="bar"
+                        value={search}
+                        onIconPress={() => getResults()}
+                        theme={{colors: {primary: '#874CCC'}}}
                     />
-                    <Menu.Item 
-                        title='Lines'
-                        onPress={() => {setOption('lines'), setPlaceholder('Lines'), closeMenu()}}
-                    />
-                </Menu>
-            </View>
-            <View style={styles.list}>
-                {error ? <Text>ERROR: Did you select a search term?</Text>
-                : <FlatList
-                    data={pageData[page]}
-                    keyExtractor={(item) => item.id}
-                    renderItem={renderItem}
-                    showsVerticalScrollIndicator={false}
-                    >
-                </FlatList>}
+                </View>
+                <View style={styles.list}>
+                    {error ? <Text>ERROR: Did you select a search term?</Text>
+                    : <FlatList
+                        data={pageData[page]}
+                        keyExtractor={(item) => item.id}
+                        renderItem={renderItem}
+                        showsVerticalScrollIndicator={false}
+                        >
+                    </FlatList>}
+                </View>
             </View>
             <View style={styles.pagination}>
                 <Button
@@ -159,21 +170,27 @@ export default function SearchPoems({navigation}) {
 
 const styles = StyleSheet.create({
     container: {
+        backgroundColor: '#DFCCFB',
         flex: 1,
+        alignItems: 'center'
+    },
+    flex: {
+        flex: 1,
+        width: '85%',
         backgroundColor: '#DFCCFB',
         alignItems: 'center',
         justifyContent: 'center',
     },
     search: {
-        width: '85%',
         paddingBottom: 20,
+        width: '100%',
     },  
     list: {
         backgroundColor: '#fff',
         flex: 1,
         alignItems: 'center',
         justifyContent:'center',
-        width: '85%',
+        width: '100%',
         borderRadius: 20,
         borderWidth: 3,
         borderColor: '#D0BFFF',
@@ -183,5 +200,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         margin: 10
+    },
+    button: {
+        backgroundColor: '#ffff'
+    },
+    checkedButton: {
+        backgroundColor: '#e995d4ff',
+    },
+    text: {
+        paddingBottom: 20,
+        fontSize: 16
     }
 });  
