@@ -8,7 +8,7 @@ import { auth } from "../firebase.config";
 import { StyleSheet, View } from "react-native";
 import { AppBar } from "@react-native-material/core";
 import Popover, { PopoverPlacement } from 'react-native-popover-view';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -18,25 +18,19 @@ function HeaderLogo({navigation, route, options, back}) {
 
     const popoverRef = useRef();
 
+    const [focusStyle, setFocusStyle] = useState("option")
+
+    const changeStyle = () => {
+      setFocusStyle("focusOption")
+    }
+
     return (
       <View style={styles.container}>
         <AppBar
           title="PocketPoet"
           centerTitle={true}
           color='#8548dbff'
-          leading={props => 
-            <FontAwesome.Button 
-              name="arrow-left" 
-              onPress={() => navigation.goBack()}
-              color={'white'}
-              backgroundColor={'#8548dbff'}
-              size={35}
-              height={50}
-              accessible={true}
-              accessibilityLabel="Go back"
-            >
-            </FontAwesome.Button>
-          }
+          
           trailing={props => (
             <Popover          
               isVisible={showPopover}
@@ -44,20 +38,22 @@ function HeaderLogo({navigation, route, options, back}) {
               onRequestClose={() => setShowPopover(false)}
               arrowSize={"0"}
               ref={popoverRef}
+              accessibilityLabel="juuri"
               from={(
                 <IconButton 
                   icon="dots-vertical"
+                  accessibilityLabel="tästä aukeaa menu"
                   size={35}
                   iconColor="white"
-                  onPress={() => setShowPopover(true)}
+                  onPress={() => setShowPopover(!showPopover)}
                   accessible={true}
-                  accessibilityLabel="Menu"
+                  //accessibilityLabel="Menu"
                   accessibilityRole="menu"
                 />
               )}>
               <Button 
                 accessibilityRole="menuitem" 
-                accessible={true} 
+                accessible={true}
                 onPress={() => {
                   navigation.navigate('Profile') 
                   popoverRef.current.requestClose()

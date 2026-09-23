@@ -1,16 +1,14 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { View, FlatList, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import 'react-native-get-random-values';
 import { stringify, v4 as uuidv4 } from 'uuid';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { List, Button, Text } from "react-native-paper";
+import { List, Button, Text, TextInput } from "react-native-paper";
 import { db } from "../firebase.config";
 import { ref, onValue, push, remove, set, get } from "firebase/database";
 import { auth } from "../firebase.config";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/authContext";
-import {experimental_accessibilityOrder} from "react-native";
-import GlobalVariables from "../constants/GlobalVariables";
 
 export default function HomeScreen({ navigation }) {
 
@@ -34,7 +32,7 @@ export default function HomeScreen({ navigation }) {
         var requests = []
         for (let i = 0; i < details.poemCount; i++) {
             requests.push(`https://poetrydb.org/random`);
-            console.log(details.poemCount);
+            console.log('for loop ', details.poemCount);
         }
         console.log('requests ', requests);
         return requests;
@@ -177,7 +175,11 @@ export default function HomeScreen({ navigation }) {
                     </View>
                     {poems.length === 0 ?
                     <View style={styles.list} nativeID="button">
-                        <Button onPress={() => updatePoems(true)}>Fetch your first poems!</Button>
+                        <Button  
+                            onPress={() => updatePoems(true)}
+                            mode="outlined"
+                            activeOutlineColor="#e34444"
+                        >Fetch your first poems!</Button>
                     </View>
                     : <View style={styles.list} nativeID="list">
                         <FlatList
@@ -199,11 +201,9 @@ const styles = StyleSheet.create({
       flex: 1,
       backgroundColor: '#DFCCFB',
       alignItems: 'center',
-      justifyContent: 'center',
     },
     title: {
-        flex: 1,
-        width: '85%',
+        width: '95%',
         backgroundColor: '#fff',
         borderRadius: 20,
         marginBottom: 10,
@@ -213,15 +213,14 @@ const styles = StyleSheet.create({
         borderColor: '#D0BFFF',
     },
     list: {
-        flex: 10,
         alignItems: 'center',
         backgroundColor: '#fff',
         borderRadius: 20,
-        width: '85%',
-        marginBottom: 20,
+        width: '95%',
         borderWidth: 3,
         borderColor: '#D0BFFF',
-        paddingBottom: 20
+        paddingBottom: 20,
+        flex: 1
     },
     listItem: {
         flex: 1,
@@ -229,6 +228,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
         borderRadius: 20,
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        marginHorizontal: 10
     }
   });

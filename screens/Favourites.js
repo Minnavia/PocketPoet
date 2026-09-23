@@ -1,9 +1,10 @@
 import { db } from "../firebase.config";
 import { FlatList, StyleSheet, View } from "react-native";
-import { useEffect, useState } from "react";
-import { List, Text } from "react-native-paper";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { List, Text, TextInput } from "react-native-paper";
 import { onValue, ref } from "firebase/database";
 import { useAuth } from "../contexts/authContext";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function Favourites({navigation}){
 
@@ -31,7 +32,8 @@ export default function Favourites({navigation}){
 
     useEffect(() => {
         getFavourites();
-    }, [])
+    }, []);
+
 
     const renderItem = ({item}) => (
         <List.Item
@@ -42,6 +44,7 @@ export default function Favourites({navigation}){
                 navigation.navigate('Read', {poem: item})}}
         />
     );
+
 
     return(
         <View style={styles.container}>
@@ -73,10 +76,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         justifyContent: 'center',
         alignItems: 'center',
-        width: '85%',
+        width: '95%',
         borderRadius: 20,
         borderWidth: 3,
         borderColor: '#D0BFFF',
-        marginBottom: 20
+        marginBottom: 20,
+        marginTop: 20
     }
 });

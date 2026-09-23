@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { View, StyleSheet, KeyboardAvoidingView } from "react-native";
-import { Text, TextInput, Button } from "react-native-paper";
+import { Text, TextInput, Button, HelperText } from "react-native-paper";
 import { auth, db } from "../firebase.config";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { ref, set } from "firebase/database";
@@ -11,18 +11,45 @@ export default function SignUp({navigation}) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const [nameError, setNameError] = useState(false);
+    const [nameMsg, setNameMsg] = useState('');
+    const [emailError, setEmailError] = useState(false);
+    const [pswError, setPswError] = useState(false);
+    const [emailMsg, setEmailMsg] = useState('');
+    const [pswrMsg, setPswMsg] = useState('');
 
     const {user} = useAuth();
 
     const handleSignUp = async() => {
+        setNameError(false);
+        setNameMsg('');
+        setEmailError(false);
+        setEmailMsg('');
+        setPswError(false);
+        setPswMsg('');
         try {
-            console.log("here for some reason");
             await createUserWithEmailAndPassword(auth, email, password);
             await updateProfile(auth.currentUser, {displayName: name})
             .then(userToDB());
         } catch(error) {
-            setError(error.message);
+            if (error.code == "auth/invalid-email") {
+                setErrorEmail(true);
+                setEmailMsg("Please provide a valid email address in the format name@domain.com")
+            }
+            if (error.code == "auth/email-already-in-use") {
+                setErrorEmail(true);
+                setEmailMsg("This email is already in use. Please try another.");
+            }
+            if (error.code == "auth/missing-password") {
+                setPswError(true);
+                setPswMsg("Please enter a password.")
+            }
+            if (error.code == "auth/weak-password") {
+                setPswError(true);
+                setPswError("Password should be at least 6 characters.");
+            }
+            console.log('Error: ', error.code);
+            console.log("Msg: ", error.message);
         }
     }
 
@@ -54,10 +81,12 @@ export default function SignUp({navigation}) {
                     onChangeText={(text) => setName(text)}
                     activeUnderlineColor="#874CCC"
                     underlineColor="#BEADFA"
+                    error={nameError}
                 />
+                <HelperText type="error" accessibilityLiveRegion="polite">{nameMsg}</HelperText>
             </View>
             <View style={styles.section}>
-                <Text>Email</Text>
+                <Text nativeID="emailLabel">Email</Text>
                 <TextInput 
                     value={email}
                     onChangeText={(text) => setEmail(text)}
@@ -67,10 +96,13 @@ export default function SignUp({navigation}) {
                     textContentType="emailAddress"
                     activeUnderlineColor="#874CCC"
                     underlineColor="#BEADFA"
+                    accessibilityLabelledBy="emailLabel"
+                    error={emailError}
                 />
+                <HelperText type="error" accessibilityLiveRegion="polite">{emailMsg}</HelperText>
             </View>
             <View style={styles.section}>
-                <Text>Password</Text>
+                <Text nativeID="passwordLabel">Password</Text>
                 <TextInput 
                     value={password}
                     onChangeText={(text) => setPassword(text)}
@@ -80,8 +112,10 @@ export default function SignUp({navigation}) {
                     showSoftInputOnFocus={false}
                     activeUnderlineColor="#874CCC"
                     underlineColor="#BEADFA"
+                    accessibilityLabelledBy="passwordLabel"
+                    error={pswError}
                 />
-                <Text>{error}</Text>
+                <HelperText type="error" accessibilityLiveRegion="polite">{pswrMsg}</HelperText>
             </View>
                 <Button 
                     mode="contained"
@@ -91,7 +125,7 @@ export default function SignUp({navigation}) {
                 >Sign up</Button>
                 <Button
                     onPress={() => navigation.navigate('Login')}
-                >Already have an account?</Button>
+                >Return to login</Button>
         </KeyboardAvoidingView>
     )
 }
@@ -105,7 +139,7 @@ const styles = StyleSheet.create({
     },
     section: {
         backgroundColor: '#fff',
-        width: '50%',
+        width: '75%',
         paddingBottom: 10
     }
   });  
